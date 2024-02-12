@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentsCreationDto {
-    private String lastName;
+public class StudentsCreationDTO {
     private String firstName;
+    private String lastName;
     private String facultyEmail;
     private String personalEmail;
+    private String password;
     private String nrMatriculation;
     private Integer yearOfStudy;
     private Integer semester;
     private String groupOfStudy;
-    private String password;
     private LocalDateTime enrollmentDate;
 }

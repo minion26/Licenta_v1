@@ -2,6 +2,7 @@ package com.example.licentav1.controller;
 
 import com.example.licentav1.domain.Roles;
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.UsersDTO;
 import com.example.licentav1.service.RolesService;
 import com.example.licentav1.service.UsersService;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,8 @@ public class UsersController {
     }
 
     @PostMapping("/create/users")
-    public void createUsers(@RequestBody Users users){
-        usersService.createUsers(users);
+    public void createUsers(@RequestBody UsersDTO usersDTO){
+        usersService.createUsers(usersDTO);
     }
 
     @GetMapping("/roles/{id}")

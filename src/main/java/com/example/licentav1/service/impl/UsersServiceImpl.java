@@ -2,6 +2,8 @@ package com.example.licentav1.service.impl;
 
 import com.example.licentav1.domain.Roles;
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.UsersDTO;
+import com.example.licentav1.mapper.UsersMapper;
 import com.example.licentav1.repository.RolesRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.UsersService;
@@ -23,7 +25,9 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public void createUsers(Users users) {
+    public void createUsers(UsersDTO usersDTO) {
+        Users users = UsersMapper.fromDto(usersDTO);
+
         usersRepository.save(users);
 
     }

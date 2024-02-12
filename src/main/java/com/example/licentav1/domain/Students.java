@@ -15,10 +15,8 @@ import java.util.UUID;
 @Getter
 @Table(name = "students")
 public class Students{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID idStudents;
 
+    @Id
     @Column(name = "id_users")
     private UUID idUsers;
 
