@@ -21,6 +21,6 @@ public class StudentsController {
 
     @PostMapping("/students")
     public void addStudent(Students student) {
-        studentsService.addStudent(student);
+//        studentsService.addStudent(student);
     }
 }
