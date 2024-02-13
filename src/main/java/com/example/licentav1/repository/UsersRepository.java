@@ -11,7 +11,7 @@ import java.util.UUID;
 
 //DAO
 @Repository
-public interface UsersRepository extends CrudRepository<Users, Integer> {
+public interface UsersRepository extends CrudRepository<Users, UUID> {
 
 
 }

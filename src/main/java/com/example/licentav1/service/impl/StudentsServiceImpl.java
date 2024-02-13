@@ -31,7 +31,7 @@ public class StudentsServiceImpl implements StudentsService {
     }
 
     @Override
-    public void addStudent(StudentsCreationDTO studentsCreationDTO) {
+    public void createStudent(StudentsCreationDTO studentsCreationDTO) {
         Users users;
         UUID idUser = null;
 

@@ -7,5 +7,5 @@ import com.example.licentav1.dto.StudentsDTO;
 public interface StudentsService {
     Iterable<Students> getStudents();
 
-    void addStudent(StudentsCreationDTO studentsCreationDTO);
+    void createStudent(StudentsCreationDTO studentsCreationDTO);
 }

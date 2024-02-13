@@ -2,6 +2,7 @@ package com.example.licentav1.mapper;
 
 import com.example.licentav1.domain.Users;
 import com.example.licentav1.dto.StudentsCreationDTO;
+import com.example.licentav1.dto.TeachersCreationDTO;
 import com.example.licentav1.dto.UsersDTO;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +50,17 @@ public class UsersMapper {
                 .facultyEmail(users.getFacultyEmail())
                 .personalEmail(users.getPersonalEmail())
                 .roleId(users.getRoleId())
+                .build();
+    }
+
+    public static Users fromTeacherCreationDTO(TeachersCreationDTO teachersCreationDTO) {
+        return Users.builder()
+                .firstName(teachersCreationDTO.getFirstName())
+                .lastName(teachersCreationDTO.getLastName())
+                .facultyEmail(teachersCreationDTO.getFacultyEmail())
+                .personalEmail(teachersCreationDTO.getPersonalEmail())
+                .password(teachersCreationDTO.getPassword())
+                .roleId(2)
                 .build();
     }
 }

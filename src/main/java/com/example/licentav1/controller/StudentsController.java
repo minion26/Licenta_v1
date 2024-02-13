@@ -23,7 +23,7 @@ public class StudentsController {
     }
 
     @PostMapping("/create/students")
-    public void addStudent(@RequestBody StudentsCreationDTO studentsCreationDTO) {
-        studentsService.addStudent(studentsCreationDTO);
+    public void createStudent(@RequestBody StudentsCreationDTO studentsCreationDTO) {
+        studentsService.createStudent(studentsCreationDTO);
     }
 }
