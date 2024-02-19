@@ -1,6 +1,7 @@
 package com.example.licentav1.repository;
 
 import com.example.licentav1.domain.Users;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +12,14 @@ import java.util.UUID;
 
 //DAO
 @Repository
-public interface UsersRepository extends CrudRepository<Users, UUID> {
+public interface UsersRepository extends JpaRepository<Users, UUID> {
 
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Users u WHERE u.faculty_email = :facultyEmail", nativeQuery = true)
+    boolean existsByFacultyEmail(@Param("facultyEmail") String facultyEmail);
 
+    @Query(value = "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM Users u WHERE u.personal_email = :personalEmail", nativeQuery = true)
+    boolean existsByPersonalEmail(@Param("personalEmail") String personalEmail);
+
+    @Query(value = "SELECT * FROM Users u WHERE u.faculty_email = :facultyEmail", nativeQuery = true)
+    Users findByFacultyEmail(@Param("facultyEmail") String facultyEmail);
 }

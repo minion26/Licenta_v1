@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class TeachersMapper {
-    public TeachersDTO toDto(Users users, Teachers teachers) {
+    public static TeachersDTO toDTO(Users users, Teachers teachers) {
         return TeachersDTO.builder()
                 .firstName(users.getFirstName())
                 .lastName(users.getLastName())
@@ -19,7 +19,7 @@ public class TeachersMapper {
 
     }
 
-    public Teachers fromDto(TeachersDTO teachersDto) {
+    public Teachers fromDTO(TeachersDTO teachersDto) {
         return Teachers.builder()
                 .idTeacher(teachersDto.getIdTeacher())
                 .degree(teachersDto.getDegree())

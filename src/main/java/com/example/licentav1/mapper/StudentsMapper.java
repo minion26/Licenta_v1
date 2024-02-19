@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class StudentsMapper {
 
-    public StudentsDTO toDTO(Users users, Students students) {
+
+
+    public static StudentsDTO toDTO(Users users, Students students) {
         return StudentsDTO.builder()
                 .lastName(users.getLastName())
                 .firstName(users.getFirstName())

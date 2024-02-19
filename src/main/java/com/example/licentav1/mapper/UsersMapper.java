@@ -1,6 +1,7 @@
 package com.example.licentav1.mapper;
 
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.Role;
 import com.example.licentav1.dto.StudentsCreationDTO;
 import com.example.licentav1.dto.TeachersCreationDTO;
 import com.example.licentav1.dto.UsersDTO;
@@ -8,10 +9,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UsersMapper {
-    public UsersDTO toDto(Users users) {
+    public static UsersDTO toDto(Users users) {
 
         return UsersDTO.builder()
                 .idUsers(users.getIdUsers())
+                .firstName(users.getFirstName())
+                .lastName(users.getLastName())
                 .password(users.getPassword())
                 .facultyEmail(users.getFacultyEmail())
                 .personalEmail(users.getPersonalEmail())
@@ -38,7 +41,7 @@ public class UsersMapper {
                 .facultyEmail(studentsCreationDTO.getFacultyEmail())
                 .personalEmail(studentsCreationDTO.getPersonalEmail())
                 .password(studentsCreationDTO.getPassword())
-                .roleId(3)
+                .roleId(Role.STUDENT.ordinal())
                 .build();
     }
 
@@ -60,7 +63,7 @@ public class UsersMapper {
                 .facultyEmail(teachersCreationDTO.getFacultyEmail())
                 .personalEmail(teachersCreationDTO.getPersonalEmail())
                 .password(teachersCreationDTO.getPassword())
-                .roleId(2)
+                .roleId(Role.TEACHER.ordinal())
                 .build();
     }
 }

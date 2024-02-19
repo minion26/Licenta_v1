@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface RolesService {
 
     Optional<Roles> getRoleById(Integer id);
+
+    Integer getRoleId(String roleName);
 }
