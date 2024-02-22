@@ -1,11 +1,9 @@
 package com.example.licentav1.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -26,4 +24,7 @@ public class Teachers {
 
     @Column(name = "degree")
     private String degree;
+
+    @OneToMany(mappedBy = "teachers")
+    private List<Didactic> didactics;
 }
