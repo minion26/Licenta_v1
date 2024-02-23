@@ -14,7 +14,10 @@ import com.example.licentav1.repository.TeachersRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.TeachersService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -104,5 +107,33 @@ public class TeachersServiceImpl implements TeachersService {
 
         Users user = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         usersRepository.delete(user);
+    }
+
+    @Override
+    public void uploadTeachers(MultipartFile file) throws IOException {
+        BufferedReader br = new BufferedReader(new java.io.InputStreamReader(file.getInputStream()));
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] data = line.split(",");
+            Users users = UsersMapper.fromCsvDataTeacher(data);
+
+            if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
+                throw new UserAlreadyExistsException("Same email    already exists");
+            }
+            usersRepository.save(users);
+            UUID idUser = users.getIdUsers();
+
+            Teachers teachers = Teachers.builder()
+                    .idUsers(idUser)
+                    .idTeacher(data[4])
+                    .degree(data[5])
+                    .build();
+
+            if (teachersRepository.existsByIdTeacher(teachers.getIdTeacher())) {
+                throw new TeacherAlreadyExistsException("Teacher already exists");
+            }
+
+            teachersRepository.save(teachers);
+        }
     }
 }

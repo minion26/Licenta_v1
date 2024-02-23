@@ -69,7 +69,7 @@ public class UsersMapper {
                 .build();
     }
 
-    public static Users fromCsvData(String[] data){
+    public static Users fromCsvDataStudent(String[] data){
         String password = UUID.randomUUID().toString().substring(0, 8);
         return Users.builder()
                 .firstName(data[0])
@@ -78,6 +78,18 @@ public class UsersMapper {
                 .personalEmail(data[3])
                 .password(password)
                 .roleId(Role.STUDENT.ordinal())
+                .build();
+    }
+
+    public static Users fromCsvDataTeacher(String[] data){
+        String password = UUID.randomUUID().toString().substring(0, 8);
+        return Users.builder()
+                .firstName(data[0])
+                .lastName(data[1])
+                .facultyEmail(data[2])
+                .personalEmail(data[3])
+                .password(password)
+                .roleId(Role.TEACHER.ordinal())
                 .build();
     }
 }

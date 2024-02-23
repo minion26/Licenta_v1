@@ -132,7 +132,7 @@ public class StudentsServiceImpl implements StudentsService {
         String line;
         while ((line = br.readLine()) != null) {
             String[] data = line.split(",");
-            Users users = UsersMapper.fromCsvData(data);
+            Users users = UsersMapper.fromCsvDataStudent(data);
 
             if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
                 throw new UserAlreadyExistsException("User already exists");

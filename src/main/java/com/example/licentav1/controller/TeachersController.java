@@ -10,7 +10,9 @@ import com.example.licentav1.service.TeachersService;
 import com.example.licentav1.domain.Teachers;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +35,12 @@ public class TeachersController {
     @ResponseStatus(HttpStatus.CREATED)
     public void createTeacher(@RequestBody TeachersCreationDTO teachersCreationDTO) throws UserAlreadyExistsException, TeacherAlreadyExistsException {
         teachersService.createTeacher(teachersCreationDTO);
+    }
+
+    @PostMapping("/upload")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadTeachers(@RequestParam("file") MultipartFile file) throws IOException, UserAlreadyExistsException, TeacherAlreadyExistsException {
+        teachersService.uploadTeachers(file);
     }
 
     @PutMapping("/update/{id}")
