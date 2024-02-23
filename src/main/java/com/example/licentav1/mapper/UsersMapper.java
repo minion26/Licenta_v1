@@ -7,6 +7,8 @@ import com.example.licentav1.dto.TeachersCreationDTO;
 import com.example.licentav1.dto.UsersDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class UsersMapper {
     public static UsersDTO toDto(Users users) {
@@ -64,6 +66,18 @@ public class UsersMapper {
                 .personalEmail(teachersCreationDTO.getPersonalEmail())
                 .password(teachersCreationDTO.getPassword())
                 .roleId(Role.TEACHER.ordinal())
+                .build();
+    }
+
+    public static Users fromCsvData(String[] data){
+        String password = UUID.randomUUID().toString().substring(0, 8);
+        return Users.builder()
+                .firstName(data[0])
+                .lastName(data[1])
+                .facultyEmail(data[2])
+                .personalEmail(data[3])
+                .password(password)
+                .roleId(Role.STUDENT.ordinal())
                 .build();
     }
 }

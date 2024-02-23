@@ -15,7 +15,10 @@ import com.example.licentav1.repository.StudentsRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.StudentsService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -121,5 +124,34 @@ public class StudentsServiceImpl implements StudentsService {
         Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
         usersRepository.delete(users);
 
+    }
+
+    @Override
+    public void uploadStudents(MultipartFile file) throws StudentAlreadyExistsException, UserAlreadyExistsException, IOException {
+        BufferedReader br = new BufferedReader(new java.io.InputStreamReader(file.getInputStream()));
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] data = line.split(",");
+            Users users = UsersMapper.fromCsvData(data);
+
+            if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
+                throw new UserAlreadyExistsException("User already exists");
+            }
+            usersRepository.save(users);
+            UUID idUser = users.getIdUsers();
+
+            Students students = Students.builder()
+                    .idUsers(idUser)
+                    .nrMatriculation(data[4])
+                    .yearOfStudy(Integer.parseInt(data[5]))
+                    .semester(Integer.parseInt(data[6]))
+                    .groupOfStudy(data[7])
+                    .enrollmentDate(java.time.LocalDateTime.now())
+                    .build();
+            if (studentsRepository.existsByNrMatriculation(students.getNrMatriculation())) {
+                throw new StudentAlreadyExistsException("Student with this code already exists");
+            }
+            studentsRepository.save(students);
+        }
     }
 }
