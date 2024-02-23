@@ -140,14 +140,7 @@ public class StudentsServiceImpl implements StudentsService {
             usersRepository.save(users);
             UUID idUser = users.getIdUsers();
 
-            Students students = Students.builder()
-                    .idUsers(idUser)
-                    .nrMatriculation(data[4])
-                    .yearOfStudy(Integer.parseInt(data[5]))
-                    .semester(Integer.parseInt(data[6]))
-                    .groupOfStudy(data[7])
-                    .enrollmentDate(java.time.LocalDateTime.now())
-                    .build();
+            Students students = StudentsMapper.fromCsvData(data, idUser);
             if (studentsRepository.existsByNrMatriculation(students.getNrMatriculation())) {
                 throw new StudentAlreadyExistsException("Student with this code already exists");
             }

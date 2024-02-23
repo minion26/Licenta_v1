@@ -6,6 +6,8 @@ import com.example.licentav1.dto.StudentsCreationDTO;
 import com.example.licentav1.dto.StudentsDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 public class StudentsMapper {
 
@@ -32,6 +34,17 @@ public class StudentsMapper {
                 .semester(studentsDto.getSemester())
                 .groupOfStudy(studentsDto.getGroupOfStudy())
                 .enrollmentDate(studentsDto.getEnrollmentDate())
+                .build();
+    }
+
+    public static Students fromCsvData(String[] data, UUID idUser){
+        return Students.builder()
+                .idUsers(idUser)
+                .nrMatriculation(data[4])
+                .yearOfStudy(Integer.parseInt(data[5]))
+                .semester(Integer.parseInt(data[6]))
+                .groupOfStudy(data[7])
+                .enrollmentDate(java.time.LocalDateTime.now())
                 .build();
     }
 

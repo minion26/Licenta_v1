@@ -123,11 +123,7 @@ public class TeachersServiceImpl implements TeachersService {
             usersRepository.save(users);
             UUID idUser = users.getIdUsers();
 
-            Teachers teachers = Teachers.builder()
-                    .idUsers(idUser)
-                    .idTeacher(data[4])
-                    .degree(data[5])
-                    .build();
+            Teachers teachers = TeachersMapper.fromCsvData(data, idUser);
 
             if (teachersRepository.existsByIdTeacher(teachers.getIdTeacher())) {
                 throw new TeacherAlreadyExistsException("Teacher already exists");
