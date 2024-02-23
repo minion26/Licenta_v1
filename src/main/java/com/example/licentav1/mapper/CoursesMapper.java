@@ -27,4 +27,14 @@ public class CoursesMapper {
                 .description(coursesCreationDTO.getDescription())
                 .build();
     }
+
+    public static Courses fromCsvDataCourse(String[] data){
+        return Courses.builder()
+                .name(data[0])
+                .year(Integer.parseInt(data[1]))
+                .semester(Integer.parseInt(data[2]))
+                .credits(Integer.parseInt(data[3]))
+                .description(data[4])
+                .build();
+    }
 }

@@ -7,7 +7,9 @@ import com.example.licentav1.service.CoursesService;
 import com.example.licentav1.service.DidacticService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -29,5 +31,11 @@ public class CoursesController {
     @ResponseStatus(HttpStatus.CREATED)
     public void createCourse(@RequestBody CoursesCreationDTO coursesCreationDTO) throws CourseAlreadyExistsException {
         coursesService.createCourse(coursesCreationDTO);
+    }
+
+    @PostMapping("/upload")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadCourses(@RequestParam("file") MultipartFile file) throws IOException, CourseAlreadyExistsException{
+        coursesService.uploadCourses(file);
     }
 }
