@@ -1,9 +1,16 @@
 package com.example.licentav1.controller;
 
+import com.example.licentav1.advice.exceptions.CourseNotFoundException;
+import com.example.licentav1.advice.exceptions.DidacticRelationNotFoundException;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.dto.DidacticDTO;
 import com.example.licentav1.service.DidacticService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -15,7 +22,10 @@ public class DidacticController {
         this.didacticService = didacticService;
     }
 
-
+    @GetMapping("")
+    public List<DidacticDTO> getAllDidactic() {
+        return didacticService.getAllDidactic();
+    }
 
     @PostMapping("/create/course={courseId}&teacher={teacherId}")
     @ResponseStatus(HttpStatus.CREATED)
@@ -23,4 +33,21 @@ public class DidacticController {
         didacticService.createDidactic(courseId, teacherId);
     }
 
+    @PostMapping("/upload")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+        didacticService.uploadFile(file);
+    }
+
+    @PatchMapping("/update/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    // Teacher Name : first_name + last_name
+    public void updateDidactic(@PathVariable UUID id, @RequestBody DidacticDTO didacticDTO) throws DidacticRelationNotFoundException, TeacherNotFoundException, CourseNotFoundException {
+        didacticService.updateDidactic(id, didacticDTO);
+    }
+    @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteDidactic(@PathVariable UUID id) throws DidacticRelationNotFoundException {
+        didacticService.deleteDidactic(id);
+    }
 }

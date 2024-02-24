@@ -43,7 +43,7 @@ public class TeachersController {
         teachersService.uploadTeachers(file);
     }
 
-    @PutMapping("/update/{id}")
+    @PatchMapping("/update/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateTeacher(@PathVariable(value="id") UUID id, @RequestBody TeachersDTO teachersDTO) throws UserNotFoundException, TeacherNotFoundException {
         teachersService.updateTeacher(id, teachersDTO);

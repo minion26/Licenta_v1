@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseAlreadyExistsException;
+import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.dto.CoursesCreationDTO;
 import com.example.licentav1.dto.CoursesDTO;
@@ -13,6 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CoursesServiceImpl implements CoursesService {
@@ -55,5 +58,39 @@ public class CoursesServiceImpl implements CoursesService {
 
             coursesRepository.save(courses);
         }
+    }
+
+    @Override
+    public void deleteCourse(UUID id) throws CourseNotFoundException {
+        //delete the course by id
+        Courses courses = coursesRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        coursesRepository.delete(courses);
+
+    }
+
+    @Override
+    public void updateCourse(UUID id, CoursesCreationDTO coursesCreationDTO) {
+        Courses courses = coursesRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        if (coursesCreationDTO.getName() != null) {
+            courses.setName(coursesCreationDTO.getName());
+        }
+
+        if (coursesCreationDTO.getYear() != null) {
+            courses.setYear(coursesCreationDTO.getYear());
+        }
+
+        if (coursesCreationDTO.getSemester() != null) {
+            courses.setSemester(coursesCreationDTO.getSemester());
+        }
+
+        if (coursesCreationDTO.getCredits() != null) {
+            courses.setCredits(coursesCreationDTO.getCredits());
+        }
+
+        if (coursesCreationDTO.getDescription() != null) {
+            courses.setDescription(coursesCreationDTO.getDescription());
+        }
+
+        coursesRepository.save(courses);
     }
 }

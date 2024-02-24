@@ -100,17 +100,32 @@ public class StudentsServiceImpl implements StudentsService {
     public void updateStudent(UUID id, StudentsDTO studentsDTO) throws UserNotFoundException, StudentNotFoundException {
         // Fetch and update the Students entity
         Students students = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
-        students.setNrMatriculation(studentsDTO.getNrMatriculation());
-        students.setYearOfStudy(studentsDTO.getYearOfStudy());
-        students.setSemester(studentsDTO.getSemester());
-        students.setGroupOfStudy(studentsDTO.getGroupOfStudy());
+
+        if (studentsDTO.getNrMatriculation() != null) {
+            students.setNrMatriculation(studentsDTO.getNrMatriculation());
+        }
+        if (studentsDTO.getYearOfStudy() != null) {
+            students.setYearOfStudy(studentsDTO.getYearOfStudy());
+        }
+        if (studentsDTO.getSemester() != null) {
+            students.setSemester(studentsDTO.getSemester());
+        }
+        if (studentsDTO.getGroupOfStudy() != null) {
+            students.setGroupOfStudy(studentsDTO.getGroupOfStudy());
+        }
         studentsRepository.save(students);
 
         // Fetch and update the Users entity
         Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
-        users.setFirstName(studentsDTO.getFirstName());
-        users.setLastName(studentsDTO.getLastName());
-        users.setPersonalEmail(studentsDTO.getPersonalEmail());
+        if (studentsDTO.getFirstName() != null) {
+            users.setFirstName(studentsDTO.getFirstName());
+        }
+        if (studentsDTO.getLastName() != null) {
+            users.setLastName(studentsDTO.getLastName());
+        }
+        if (studentsDTO.getPersonalEmail() != null) {
+            users.setPersonalEmail(studentsDTO.getPersonalEmail());
+        }
         usersRepository.save(users);
     }
 

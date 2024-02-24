@@ -1,5 +1,6 @@
 package com.example.licentav1.domain;
 
+import com.fasterxml.jackson.core.Base64Variant;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,4 +34,5 @@ public class Didactic {
         this.teachers = teachers;
         this.courses = courses;
     }
+
 }

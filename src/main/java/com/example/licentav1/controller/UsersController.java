@@ -41,7 +41,7 @@ public class UsersController {
         usersService.createUsers(usersDTO);
     }
 
-    @PutMapping("/update/{id}")
+    @PatchMapping("/update/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateUsers(@PathVariable(value="id") UUID id , @RequestBody UsersDTO usersDTO) throws UserNotFoundException{
         usersService.updateUsers(id, usersDTO);

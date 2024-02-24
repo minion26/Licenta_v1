@@ -89,14 +89,24 @@ public class TeachersServiceImpl implements TeachersService {
     public void updateTeacher(UUID id, TeachersDTO teachersDTO) throws UserNotFoundException, TeacherNotFoundException {
         // fetch the user and teacher from the database
         Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+
         //update the user
-        users.setFirstName(teachersDTO.getFirstName());
-        users.setLastName(teachersDTO.getLastName());
-        users.setPersonalEmail(teachersDTO.getPersonalEmail());
+        if (teachersDTO.getFirstName() != null) {
+            users.setFirstName(teachersDTO.getFirstName());
+        }
+        if (teachersDTO.getLastName() != null) {
+            users.setLastName(teachersDTO.getLastName());
+        }
+        if (teachersDTO.getPersonalEmail() != null) {
+            users.setPersonalEmail(teachersDTO.getPersonalEmail());
+        }
         usersRepository.save(users);
 
         Teachers teacher = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
-        teacher.setDegree(teachersDTO.getDegree());
+
+        if(teachersDTO.getDegree() != null) {
+            teacher.setDegree(teachersDTO.getDegree());
+        }
         teachersRepository.save(teacher);
     }
 
