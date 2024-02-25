@@ -12,4 +12,8 @@ public interface StudentsFollowCoursesService {
     void uploadFile(MultipartFile file) throws IOException;
 
     List<StudentsFollowCoursesDTO> getAllStudentsFollowCourses();
+
+    void deleteStudentFollowCourse(String id);
+
+    void updateStudentFollowCourse(String id, StudentsFollowCoursesDTO studentsFollowCoursesDTO);
 }

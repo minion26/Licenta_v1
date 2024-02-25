@@ -60,7 +60,7 @@ public class DidacticServiceImpl implements DidacticService {
     }
 
     @Override
-    public void uploadFile(MultipartFile file) throws IOException {
+    public void uploadFile(MultipartFile file) throws IOException, TeacherNotFoundException, CourseNotFoundException{
         BufferedReader br = new BufferedReader(new java.io.InputStreamReader(file.getInputStream()));
         String line;
 
@@ -72,8 +72,11 @@ public class DidacticServiceImpl implements DidacticService {
             Optional<Teachers> teachers = teacherRepository.findByTeacherId(teacherId);
             Optional<Courses> courses = coursesRepository.findByName(courseName);
 
-            if (teachers.isEmpty() || courses.isEmpty()) {
-                throw new RuntimeException("Teacher or course not found");
+            if (teachers.isEmpty() ) {
+                throw new TeacherNotFoundException("Teacher not found");
+            }
+            if (courses.isEmpty()){
+                throw new CourseNotFoundException("Course not found");
             }
 
             Didactic didactic = new Didactic(teachers.get(), courses.get());

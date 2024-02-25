@@ -1,5 +1,6 @@
 package com.example.licentav1.controller;
 
+import com.example.licentav1.advice.exceptions.StudentCourseRelationNotFoundException;
 import com.example.licentav1.dto.StudentsFollowCoursesDTO;
 import com.example.licentav1.service.StudentsFollowCoursesService;
 import org.springframework.http.HttpStatus;
@@ -29,5 +30,17 @@ public class StudentsFollowCoursesController {
     @ResponseStatus(HttpStatus.OK)
     public List<StudentsFollowCoursesDTO> getAllStudentsFollowCourses() {
         return studentsFollowCoursesService.getAllStudentsFollowCourses();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteStudentFollowCourse(@PathVariable("id") String id) throws StudentCourseRelationNotFoundException {
+        studentsFollowCoursesService.deleteStudentFollowCourse(id);
+    }
+
+    @PatchMapping("/update/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateStudentFollowCourse(@PathVariable("id") String id, @RequestBody StudentsFollowCoursesDTO studentsFollowCoursesDTO) throws StudentCourseRelationNotFoundException {
+        studentsFollowCoursesService.updateStudentFollowCourse(id, studentsFollowCoursesDTO);
     }
 }

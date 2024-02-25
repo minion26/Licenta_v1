@@ -37,4 +37,7 @@ public class Courses {
 
     @OneToMany(mappedBy = "courses")
     private List<Didactic> didactics;
+
+    @OneToMany(mappedBy = "course")
+    private List<StudentsFollowCourses> students;
 }

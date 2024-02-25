@@ -18,4 +18,7 @@ public interface StudentsRepository extends JpaRepository<Students, UUID> {
 
     @Query(value = "SELECT * FROM students WHERE nr_matriculation = :nrMatriculation", nativeQuery = true)
     Optional<Students> findByNrMatriculation(@Param("nrMatriculation") String nrMatriculation);
+
+    @Query(value = "SELECT s.id_users FROM Students s JOIN Users u ON s.id_users = u.id_users WHERE u.first_name = :firstName AND u.last_name = :lastName", nativeQuery = true)
+    UUID findByName(@Param("firstName") String firstName,@Param("lastName") String lastName);
 }

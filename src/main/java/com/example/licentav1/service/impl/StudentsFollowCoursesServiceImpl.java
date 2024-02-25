@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
+import com.example.licentav1.advice.exceptions.StudentCourseRelationNotFoundException;
 import com.example.licentav1.advice.exceptions.StudentNotFoundException;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Students;
@@ -94,5 +95,38 @@ public class StudentsFollowCoursesServiceImpl implements StudentsFollowCoursesSe
                     return studentsFollowCoursesDTO;
 
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteStudentFollowCourse(String id) throws StudentCourseRelationNotFoundException{
+        StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findById(UUID.fromString(id)).orElseThrow(() -> new StudentCourseRelationNotFoundException("Student-Course relation not found"));
+        studentsFollowCoursesRepository.delete(studentsFollowCourses);
+    }
+
+    @Override
+    public void updateStudentFollowCourse(String id, StudentsFollowCoursesDTO studentsFollowCoursesDTO) {
+        StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findById(UUID.fromString(id)).orElseThrow(() -> new StudentCourseRelationNotFoundException("Student-Course relation not found"));
+
+        if (studentsFollowCoursesDTO.getStudentName() != null) {
+            String[] nameParts = studentsFollowCoursesDTO.getStudentName().split(" ");
+            String firstName = nameParts[0];
+            String lastName = nameParts[1];
+
+            UUID studentId = studentsRepository.findByName(firstName, lastName);
+            Students student = studentsRepository.findById(studentId).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+            studentsFollowCourses.setStudent(student);
+        }
+
+        if (studentsFollowCoursesDTO.getCourseName() != null) {
+            Courses course = coursesRepository.findByName(studentsFollowCoursesDTO.getCourseName()).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+            studentsFollowCourses.setCourse(course);
+        }
+
+        try {
+            studentsFollowCoursesRepository.save(studentsFollowCourses);
+        } catch (Exception e) {
+            System.out.printf("Error: %s", e.getMessage());
+        }
+
     }
 }
