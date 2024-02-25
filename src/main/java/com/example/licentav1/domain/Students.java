@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -35,4 +36,9 @@ public class Students{
     @Column(name = "enrollment_date")
     private LocalDateTime enrollmentDate;
 
+    //The mappedBy attribute should match the name of the field in
+    // the StudentsFollowCourses entity that references
+    // the Students entity.
+    @OneToMany(mappedBy = "student")
+    private List<StudentsFollowCourses> courses;
 }
