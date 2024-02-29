@@ -22,23 +22,28 @@ public class S3Service {
         this.s3Client = s3Client;
     }
 
-    public List<String> listObjects() {
+    public List<S3ObjectSummary> listObjects() {
         ObjectListing objectListing = s3Client.listObjects(bucketName);
-        return objectListing.getObjectSummaries()
-                .stream()
-                .map(S3ObjectSummary::getKey)
-                .collect(Collectors.toList());
+        return objectListing.getObjectSummaries();
     }
 
-    public String uploadFile(MultipartFile file) throws IOException {
+    public String uploadFile(MultipartFile file, ObjectMetadata metadata) throws IOException {
         String s3Path = bucketName + "/" + file.getOriginalFilename();
-        s3Client.putObject(new PutObjectRequest(bucketName, file.getOriginalFilename(), file.getInputStream(), null));
+        try{
+            s3Client.putObject(new PutObjectRequest(bucketName, file.getOriginalFilename(), file.getInputStream(), metadata));
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to upload file to S3", e);
+        }
         return s3Path;
     }
 
     public S3Object downloadFile(String fileName) {
 
-        return s3Client.getObject(new GetObjectRequest(bucketName, fileName));
+        S3Object s3Object =  s3Client.getObject(new GetObjectRequest(bucketName, fileName));
+        if (s3Object == null) {
+            throw new AmazonS3Exception("File not found: " + fileName);
+        }
+        return s3Object;
 
     }
 
