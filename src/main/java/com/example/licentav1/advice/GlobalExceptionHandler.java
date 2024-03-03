@@ -131,4 +131,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
 
     }
+
+    @ExceptionHandler(FileException.class)
+    public ResponseEntity<ErrorObject> handleFileException(FileException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
+
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorObject> handleStorageException(StorageException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
+
+    }
 }
