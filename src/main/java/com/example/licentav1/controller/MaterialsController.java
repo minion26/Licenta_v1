@@ -33,7 +33,7 @@ public class MaterialsController {
 
     @PostMapping(path="/upload/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadFile(@RequestParam("file") MultipartFile file, @PathVariable("id") UUID id ) throws IOException {
+    public void uploadFile(@RequestParam("file") List<MultipartFile> file, @PathVariable("id") UUID id ) throws IOException {
         materialsService.uploadFile(file, id);
     }
 

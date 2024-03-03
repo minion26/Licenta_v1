@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface MaterialsService {
-    void uploadFile(MultipartFile file, UUID id) throws IOException;
+    void uploadFile(List<MultipartFile> file, UUID id) throws IOException;
     S3Object loadFileAsResource(String fileName) throws IOException;
     ResponseEntity<Resource> prepareDownloadResource(String fileName) throws IOException;
 

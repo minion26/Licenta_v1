@@ -5,6 +5,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.licentav1.AWS.S3Service;
+import com.example.licentav1.advice.exceptions.FileException;
+import com.example.licentav1.advice.exceptions.StorageException;
 import com.example.licentav1.domain.Lectures;
 import com.example.licentav1.domain.Materials;
 import com.example.licentav1.repository.LecturesRepository;
@@ -35,23 +37,36 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
-    public void uploadFile(MultipartFile file, UUID id) throws IOException {
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        String fileUrl = s3Service.uploadFile(file, metadata);
+    public void uploadFile(List<MultipartFile> file, UUID id) throws IOException {
+        for (MultipartFile f : file){
+            if (f.isEmpty()) {
+                throw new FileException("File is empty");
+            }
 
-        Materials material = new Materials();
-        material.setName(file.getOriginalFilename());
-        material.setFileUrl(fileUrl);
+            try {
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(f.getSize());
+                String fileUrl = s3Service.uploadFile(f, metadata);
 
-        Lectures lecture = lecturesRepository.findById(id).orElse(null);
-        if (lecture != null) {
-            material.setLectures(lecture);
-        }else{
-            throw new RuntimeException("Lecture not found");
+                Materials material = new Materials();
+                material.setName(f.getOriginalFilename());
+                material.setFileUrl(fileUrl);
+
+                Lectures lecture = lecturesRepository.findById(id).orElse(null);
+                if (lecture != null) {
+                    material.setLectures(lecture);
+                } else {
+                    throw new RuntimeException("Lecture not found");
+                }
+
+                materialsRepository.save(material);
+            }catch (AmazonS3Exception e){
+                throw new StorageException("Error occurred while trying to upload file to S3 " + e.getMessage());
+            } catch (IOException e) {
+                throw new IOException("Error while uploading file: " + e.getMessage());
+            }
         }
 
-        materialsRepository.save(material);
     }
 
     @Override
@@ -106,6 +121,18 @@ public class MaterialsServiceImpl implements MaterialsService {
                 contentType = "text/x-c++src";
             } else if ("c".equalsIgnoreCase(fileExtension)) {
                 contentType = "text/x-csrc";
+            }else if ("html".equalsIgnoreCase(fileExtension)) {
+                contentType = "text/html";
+            } else if ("css".equalsIgnoreCase(fileExtension)) {
+                contentType = "text/css";
+            } else if ("js".equalsIgnoreCase(fileExtension)) {
+                contentType = "application/javascript";
+            } else if ("csv".equalsIgnoreCase(fileExtension)) {
+                contentType = "text/csv";
+            } else if ("xml".equalsIgnoreCase(fileExtension)) {
+                contentType = "application/xml";
+            } else if ("json".equalsIgnoreCase(fileExtension)) {
+                contentType = "application/json";
             }
 
             // Get S3Object metadata
