@@ -18,5 +18,5 @@ public interface CoursesService {
 
     void deleteCourse(UUID id);
 
-    void updateCourse(UUID id, CoursesCreationDTO coursesCreationDTO);
+    void updateCourse(UUID id, CoursesDTO coursesDTO);
 }

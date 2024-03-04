@@ -14,7 +14,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class CoursesDTO {
-    private UUID idCourses;
     private String name;
     private Integer year;
     private Integer semester;

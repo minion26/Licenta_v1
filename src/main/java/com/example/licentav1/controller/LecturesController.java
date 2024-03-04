@@ -4,6 +4,7 @@ import com.example.licentav1.domain.Lectures;
 import com.example.licentav1.dto.LecturesCreationDTO;
 import com.example.licentav1.dto.LecturesDTO;
 import com.example.licentav1.service.LecturesService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +34,7 @@ public class LecturesController {
 
     @PostMapping("/create/{idCourse}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createLecture(@RequestBody LecturesCreationDTO lecturesCreationDTO, @PathVariable("idCourse") UUID idCourse){
+    public void createLecture(@RequestBody @Valid LecturesCreationDTO lecturesCreationDTO, @PathVariable("idCourse") UUID idCourse){
         lecturesService.createLecture(lecturesCreationDTO, idCourse);
     }
 

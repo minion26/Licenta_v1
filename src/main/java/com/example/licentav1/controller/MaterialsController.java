@@ -31,10 +31,10 @@ public class MaterialsController {
         this.materialsService = materialsService;
     }
 
-    @PostMapping(path="/upload/{id}")
+    @PostMapping(path="/upload/{idLecture}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void uploadFile(@RequestParam("file") List<MultipartFile> file, @PathVariable("id") UUID id ) throws IOException {
-        materialsService.uploadFile(file, id);
+    public void uploadFile(@RequestParam("file") List<MultipartFile> file, @PathVariable("idLecture") UUID idLecture ) throws IOException {
+        materialsService.uploadFile(file, idLecture);
     }
 
     @GetMapping("/download/{fileName}")
@@ -57,7 +57,7 @@ public class MaterialsController {
 
     @PatchMapping("/update/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateFile(@RequestParam("file") MultipartFile file, @PathVariable("id") UUID id) throws IOException {
+    public void updateFile(@RequestParam("file") MultipartFile file, @PathVariable("id") UUID id) throws IOException, InterruptedException {
         materialsService.updateFile(file, id);
     }
 }

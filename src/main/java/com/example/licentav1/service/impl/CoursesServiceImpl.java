@@ -32,11 +32,8 @@ public class CoursesServiceImpl implements CoursesService {
             throw new CourseAlreadyExistsException("Course already exists");
         }
 
-        try{
-            coursesRepository.save(CoursesMapper.fromDTO(coursesCreationDTO));
-        }catch (Exception e){
-            System.out.printf("Error: %s", e.getMessage());
-        }
+        coursesRepository.save(CoursesMapper.fromDTO(coursesCreationDTO));
+
     }
 
     @Override
@@ -69,26 +66,26 @@ public class CoursesServiceImpl implements CoursesService {
     }
 
     @Override
-    public void updateCourse(UUID id, CoursesCreationDTO coursesCreationDTO) {
+    public void updateCourse(UUID id, CoursesDTO coursesDTO) {
         Courses courses = coursesRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
-        if (coursesCreationDTO.getName() != null) {
-            courses.setName(coursesCreationDTO.getName());
+        if (coursesDTO.getName() != null) {
+            courses.setName(coursesDTO.getName());
         }
 
-        if (coursesCreationDTO.getYear() != null) {
-            courses.setYear(coursesCreationDTO.getYear());
+        if (coursesDTO.getYear() != null) {
+            courses.setYear(coursesDTO.getYear());
         }
 
-        if (coursesCreationDTO.getSemester() != null) {
-            courses.setSemester(coursesCreationDTO.getSemester());
+        if (coursesDTO.getSemester() != null) {
+            courses.setSemester(coursesDTO.getSemester());
         }
 
-        if (coursesCreationDTO.getCredits() != null) {
-            courses.setCredits(coursesCreationDTO.getCredits());
+        if (coursesDTO.getCredits() != null) {
+            courses.setCredits(coursesDTO.getCredits());
         }
 
-        if (coursesCreationDTO.getDescription() != null) {
-            courses.setDescription(coursesCreationDTO.getDescription());
+        if (coursesDTO.getDescription() != null) {
+            courses.setDescription(coursesDTO.getDescription());
         }
 
         coursesRepository.save(courses);

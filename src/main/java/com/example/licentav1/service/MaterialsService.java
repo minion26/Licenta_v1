@@ -20,5 +20,5 @@ public interface MaterialsService {
 
     void deleteFile(UUID id);
 
-    void updateFile(MultipartFile file, UUID id) throws IOException;
+    void updateFile(MultipartFile file, UUID id) throws IOException, InterruptedException;
 }

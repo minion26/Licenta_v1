@@ -4,6 +4,9 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
 import com.example.licentav1.AWS.S3Service;
 import com.example.licentav1.advice.exceptions.FileException;
 import com.example.licentav1.advice.exceptions.StorageException;
@@ -18,6 +21,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -44,9 +48,17 @@ public class MaterialsServiceImpl implements MaterialsService {
             }
 
             try {
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(f.getSize());
-                String fileUrl = s3Service.uploadFile(f, metadata);
+                Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+                if (lectures != null){
+                    if (materialsRepository.existsByLecturesAndName(lectures.getIdLecture(), f.getOriginalFilename())) {
+                        throw new FileException("File already exists for this lecture");
+                    }
+                }
+
+                /*ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(f.getSize());*/
+                String fileUrl = s3Service.uploadFile(f);
+
 
                 Materials material = new Materials();
                 material.setName(f.getOriginalFilename());
@@ -62,7 +74,7 @@ public class MaterialsServiceImpl implements MaterialsService {
                 materialsRepository.save(material);
             }catch (AmazonS3Exception e){
                 throw new StorageException("Error occurred while trying to upload file to S3 " + e.getMessage());
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 throw new IOException("Error while uploading file: " + e.getMessage());
             }
         }
@@ -174,13 +186,13 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
-    public void updateFile(MultipartFile file, UUID id) throws IOException {
+    public void updateFile(MultipartFile file, UUID id) throws IOException, InterruptedException {
         Materials material = materialsRepository.findById(id).orElseThrow(() -> new RuntimeException("Material not found"));
         if (material != null) {
             s3Service.deleteFile(material.getName());
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize());
-            String fileUrl = s3Service.uploadFile(file, metadata);
+            String fileUrl = s3Service.uploadFile(file);
             material.setName(file.getOriginalFilename());
             material.setFileUrl(fileUrl);
             materialsRepository.save(material);
