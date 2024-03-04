@@ -11,8 +11,6 @@ import java.util.UUID;
 @Component
 public class StudentsMapper {
 
-
-
     public static StudentsDTO toDTO(Users users, Students students) {
         return StudentsDTO.builder()
                 .lastName(users.getLastName())
