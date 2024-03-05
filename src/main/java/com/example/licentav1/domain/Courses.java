@@ -43,4 +43,15 @@ public class Courses {
 
     @OneToMany(mappedBy = "courses")
     private List<Lectures> lectures;
+
+    @OneToMany(mappedBy = "course")
+    List<Exam> exams;
+
+    @ManyToMany
+    @JoinTable(
+            name = "didactic",
+            joinColumns = @JoinColumn(name = "id_courses"),
+            inverseJoinColumns = @JoinColumn(name = "id_teacher")
+    )
+    List<Teachers> teachers;
 }

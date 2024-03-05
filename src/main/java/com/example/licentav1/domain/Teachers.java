@@ -27,4 +27,10 @@ public class Teachers {
 
     @OneToMany(mappedBy = "teachers")
     private List<Didactic> didactics;
+
+    @ManyToMany(mappedBy = "teachers")
+    List<Exam> exams;
+
+    @ManyToMany(mappedBy = "teachers")
+    List<Courses> courses;
 }
