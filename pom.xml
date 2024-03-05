@@ -91,7 +91,16 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
 
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<configuration>
+					<url>jdbc:postgresql://localhost:5432/licenta</url>
+					<user>postgres</user>
+					<password>postgres</password>
+				</configuration>
 			</plugin>
 
 		</plugins>
