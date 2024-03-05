@@ -8,6 +8,7 @@ import com.example.licentav1.dto.TeachersCreationDTO;
 import com.example.licentav1.dto.TeachersDTO;
 import com.example.licentav1.service.TeachersService;
 import com.example.licentav1.domain.Teachers;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +34,7 @@ public class TeachersController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createTeacher(@RequestBody TeachersCreationDTO teachersCreationDTO) throws UserAlreadyExistsException, TeacherAlreadyExistsException {
+    public void createTeacher(@RequestBody @Valid TeachersCreationDTO teachersCreationDTO) throws UserAlreadyExistsException, TeacherAlreadyExistsException {
         teachersService.createTeacher(teachersCreationDTO);
     }
 

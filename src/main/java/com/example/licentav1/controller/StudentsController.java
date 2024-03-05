@@ -8,6 +8,7 @@ import com.example.licentav1.domain.Students;
 import com.example.licentav1.dto.StudentsCreationDTO;
 import com.example.licentav1.dto.StudentsDTO;
 import com.example.licentav1.service.StudentsService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,7 +33,7 @@ public class StudentsController {
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createStudent(@RequestBody StudentsCreationDTO studentsCreationDTO) throws StudentAlreadyExistsException, UserAlreadyExistsException {
+    public void createStudent(@RequestBody @Valid StudentsCreationDTO studentsCreationDTO) throws StudentAlreadyExistsException, UserAlreadyExistsException {
         studentsService.createStudent(studentsCreationDTO);
 
     }
@@ -40,6 +41,9 @@ public class StudentsController {
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
     public void uploadStudents(@RequestParam("file")MultipartFile file) throws IOException, StudentAlreadyExistsException, UserAlreadyExistsException{
+        if (file.isEmpty()) {
+            throw new IOException("File is empty");
+        }
         studentsService.uploadStudents(file);
     }
 

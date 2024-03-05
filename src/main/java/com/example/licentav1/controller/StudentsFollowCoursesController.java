@@ -23,6 +23,9 @@ public class StudentsFollowCoursesController {
     @PostMapping("/upload")
     @ResponseStatus(HttpStatus.CREATED)
     public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty() || file.getOriginalFilename() == null) {
+            throw new IllegalArgumentException("File is required");
+        }
         studentsFollowCoursesService.uploadFile(file);
     }
 
