@@ -1,0 +1,1 @@
+ALTER TABLE exam DROP COLUMN IF EXISTS teacher_id;

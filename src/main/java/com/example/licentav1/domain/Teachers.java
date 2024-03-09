@@ -1,5 +1,6 @@
 package com.example.licentav1.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,7 +29,13 @@ public class Teachers {
     @OneToMany(mappedBy = "teachers")
     private List<Didactic> didactics;
 
-    @ManyToMany(mappedBy = "teachers")
+    @ManyToMany
+    @JoinTable(
+            name = "teacher_exam",
+            joinColumns = @JoinColumn(name = "id_teacher"),
+            inverseJoinColumns = @JoinColumn(name = "id_exam")
+    )
+    @JsonManagedReference
     List<Exam> exams;
 
     @ManyToMany(mappedBy = "teachers")

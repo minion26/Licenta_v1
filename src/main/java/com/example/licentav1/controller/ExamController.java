@@ -1,9 +1,12 @@
 package com.example.licentav1.controller;
 
 import com.example.licentav1.dto.ExamCreationDTO;
+import com.example.licentav1.dto.ExamDTO;
 import com.example.licentav1.service.ExamService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -15,8 +18,14 @@ public class ExamController {
         this.examService = examService;
     }
 
-    @PostMapping("/create/idCourse={idCourse}&idTeacher={idTeacher}")
-    public void createExam(@RequestBody ExamCreationDTO examCreationDTO, @PathVariable UUID idCourse, @PathVariable UUID idTeacher) {
-        examService.createExam(examCreationDTO, idCourse, idTeacher);
+    @GetMapping("")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ExamDTO> getAllExams() {
+        return examService.getAllExams();
+    }
+    @PostMapping("/create/idCourse={idCourse}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createExam(@RequestBody ExamCreationDTO examCreationDTO, @PathVariable UUID idCourse) {
+        examService.createExam(examCreationDTO, idCourse);
     }
 }

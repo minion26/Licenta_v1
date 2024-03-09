@@ -1,5 +1,7 @@
 package com.example.licentav1.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,8 +26,6 @@ public class Exam {
     @Column(name="name")
     String name;
 
-    @Column(name="questions")
-    String questions;
 
     @Column(name="time_in_minutes")
     Integer timeInMinutes;
@@ -43,6 +43,16 @@ public class Exam {
     @JoinColumn(name="course_id")
     Courses course;
 
-    @ManyToMany(mappedBy = "exams")
+    @ManyToMany
+    @JoinTable(
+            name = "teacher_exam",
+            joinColumns = @JoinColumn(name = "id_exam"),
+            inverseJoinColumns = @JoinColumn(name = "id_teacher")
+    )
+    @JsonBackReference
     List<Teachers> teachers;
+
+    @OneToMany(mappedBy = "exam")
+    @JsonManagedReference
+    List<Question> questionsList;
 }
