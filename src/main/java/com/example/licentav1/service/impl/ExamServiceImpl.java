@@ -4,10 +4,7 @@ import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.advice.exceptions.ExamNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.domain.*;
-import com.example.licentav1.dto.ExamCreationDTO;
-import com.example.licentav1.dto.ExamDTO;
-import com.example.licentav1.dto.QuestionCreationDTO;
-import com.example.licentav1.dto.TeachersDTO;
+import com.example.licentav1.dto.*;
 import com.example.licentav1.mapper.ExamMapper;
 import com.example.licentav1.mapper.QuestionsExamMapper;
 import com.example.licentav1.mapper.TeacherExamMapper;
@@ -97,9 +94,13 @@ public class ExamServiceImpl implements ExamService {
 
                     //gasesc intrebarile pentru examen
                     List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
-                    List<Question> questions = new ArrayList<>();
+                    List<QuestionDTO> questions = new ArrayList<>();
                     for(QuestionsExam qe: questionsExams){
-                        questions.add(qe.getQuestion());
+                        QuestionDTO questionDTO = new QuestionDTO();
+                        questionDTO.setIdQuestion(qe.getQuestion().getIdQuestion());
+                        questionDTO.setQuestionText(qe.getQuestion().getQuestionText());
+                        questionDTO.setIdExam(qe.getExam().getIdExam());
+                        questions.add(questionDTO);
                     }
                     examDTO.setQuestions(questions);
 

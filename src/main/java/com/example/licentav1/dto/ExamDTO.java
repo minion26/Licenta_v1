@@ -19,7 +19,7 @@ import java.util.UUID;
 @Builder
 public class ExamDTO {
     private String name;
-    private List<Question> questions;
+    private List<QuestionDTO> questions;
     private Integer timeInMinutes;
     private Integer totalScore;
     private Integer passingScore;

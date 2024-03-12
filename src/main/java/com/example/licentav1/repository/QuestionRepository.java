@@ -13,4 +13,6 @@ public interface QuestionRepository extends JpaRepository<Question, UUID> {
     @Query(value="SELECT * FROM questions WHERE id_exam = :idExam", nativeQuery = true)
     List<Question> findAllByIdExam(@Param("idExam") UUID idExam);
 
+    @Query(value="SELECT * FROM questions WHERE id_exam = :idExam", nativeQuery = true)
+    List<Question> getAllQuestionsByExam(@Param("idExam") UUID idExam);
 }
