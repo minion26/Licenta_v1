@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class QuestionCreationDTO {
+    private UUID idQuestion;
     private String questionText;
     private UUID idExam;
 }

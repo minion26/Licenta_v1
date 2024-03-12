@@ -10,4 +10,8 @@ public interface ExamService {
     void createExam(ExamCreationDTO examCreationDTO, UUID idCourse);
 
     List<ExamDTO> getAllExams();
+
+    void deleteExam(UUID idExam);
+
+    void updateExam(ExamCreationDTO examCreationDTO, UUID idExam);
 }

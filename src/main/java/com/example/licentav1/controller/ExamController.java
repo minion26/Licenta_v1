@@ -28,4 +28,16 @@ public class ExamController {
     public void createExam(@RequestBody ExamCreationDTO examCreationDTO, @PathVariable UUID idCourse) {
         examService.createExam(examCreationDTO, idCourse);
     }
+
+    @DeleteMapping("/delete/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteExam(@PathVariable UUID idExam) {
+        examService.deleteExam(idExam);
+    }
+
+    @PatchMapping("/update/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateExam(@RequestBody ExamCreationDTO examCreationDTO, @PathVariable UUID idExam) {
+        examService.updateExam(examCreationDTO, idExam);
+    }
 }

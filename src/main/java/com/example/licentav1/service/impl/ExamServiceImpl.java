@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
+import com.example.licentav1.advice.exceptions.ExamNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.ExamCreationDTO;
@@ -61,6 +62,9 @@ public class ExamServiceImpl implements ExamService {
         for (QuestionCreationDTO questionDTO : examCreationDTO.getQuestion()) {
             // salvez intrebarea
             Question question = new Question();
+            if(questionDTO.getIdQuestion() != null) // e null cand creez examenul si nu am id ca el e generat automat in questions entity
+                question.setIdQuestion(questionDTO.getIdQuestion());
+
             question.setQuestionText(questionDTO.getQuestionText());
             question.setExam(exam);
             questions.add(question);
@@ -112,6 +116,55 @@ public class ExamServiceImpl implements ExamService {
                 }
 
         ).collect(Collectors.toList());
+
+    }
+
+    @Override
+    public void deleteExam(UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
+        questionsExamRepository.deleteAll(questionsExams);
+
+        List<TeacherExam> teacherExams = teacherExamRepository.findAllByIdExam(exam.getIdExam());
+        teacherExamRepository.deleteAll(teacherExams);
+
+        List<Question> questions = questionRepository.findAllByIdExam(exam.getIdExam());
+        questionRepository.deleteAll(questions);
+
+        examRepository.delete(exam);
+    }
+
+    @Override
+    public void updateExam(ExamCreationDTO examCreationDTO, UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        if(examCreationDTO.getName() != null)
+            exam.setName(examCreationDTO.getName());
+        if(examCreationDTO.getTotalScore() != null)
+            exam.setTotalScore(examCreationDTO.getTotalScore());
+        if(examCreationDTO.getPassingScore() != null)
+            exam.setPassingScore(examCreationDTO.getPassingScore());
+        if(examCreationDTO.getDate() != null)
+            exam.setDate(examCreationDTO.getDate());
+        if(examCreationDTO.getTimeInMinutes() != null)
+            exam.setTimeInMinutes(examCreationDTO.getTimeInMinutes());
+
+        List<Question> questions = questionRepository.findAllByIdExam(exam.getIdExam());
+        for(Question q: questions){
+
+            for (QuestionCreationDTO questionDTO : examCreationDTO.getQuestion()) {
+
+                if(q.getIdQuestion().equals(questionDTO.getIdQuestion())){
+
+                    if(questionDTO.getQuestionText() != null)
+                        q.setQuestionText(questionDTO.getQuestionText());
+                    questionRepository.save(q);
+                }
+            }
+        }
+
+        examRepository.save(exam);
 
     }
 }
