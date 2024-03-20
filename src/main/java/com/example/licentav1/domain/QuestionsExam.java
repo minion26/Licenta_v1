@@ -3,6 +3,7 @@ package com.example.licentav1.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -26,4 +27,7 @@ public class QuestionsExam {
     @ManyToOne
     @JoinColumn(name = "id_exam", nullable = false)
     private Exam exam;
+
+    @OneToMany(mappedBy = "questionsExam", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CorrectAnswersExam> correctAnswersExams;
 }
