@@ -23,6 +23,10 @@ public class CorrectAnswersExamController {
         correctAnswersExamService.createCorrectAnswersExam(idQuestion, correctAnswersExamCreationDTO);
     }
 
+    @PostMapping("/createByExam/idExam={idExam}")
+    public void createCorrectAnswersExam(@PathVariable UUID idExam, @RequestBody Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO) {
+        correctAnswersExamService.createListOfCorrectAnswersExam(idExam, mapOfCorrectAnswersExamCreationDTO);
+    }
 
 
 }
