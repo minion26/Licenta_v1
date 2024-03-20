@@ -9,4 +9,6 @@ public interface QuestionService {
     List<QuestionDTO> getAllQuestionsByExam(UUID idExam);
 
     void createQuestion(QuestionDTO questionDTO, UUID idExam);
+
+    void deleteQuestion(UUID idQuestion, UUID idExam);
 }

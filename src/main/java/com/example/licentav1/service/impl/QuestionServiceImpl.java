@@ -54,4 +54,40 @@ public class QuestionServiceImpl implements QuestionService {
         questionsExamRepository.save(QuestionsExamMapper.fromDTO(exam, question));
 
     }
+
+    @Override
+    public void deleteQuestion(UUID idQuestion, UUID idExam) {
+        // find the exam
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //list all the questions
+        List<Question> questions = exam.getQuestionsList();
+
+        //find the question to delete
+        Question question = questions.stream()
+                .filter(q -> q.getIdQuestion().equals(idQuestion))
+                .findFirst()
+                .orElseThrow(() -> new ExamNotFoundException("Question not found"));
+
+        //delete the question from the exam
+        questions.remove(question);
+
+
+        QuestionsExam questionsExam = questionsExamRepository.findByIdQuestionAndIdExam(idQuestion, idExam).orElseThrow(() -> new ExamNotFoundException("Question not found"));
+        if (questionsExam != null) {
+            System.out.println("Question found");
+            questionsExamRepository.delete(questionsExam);
+            //delete the question from the questions-exam table
+            questionsExamRepository.delete(questionsExam);
+
+            //delete the question from the questions table
+            questionRepository.delete(question);
+        }else{
+            System.out.println("Question not found");
+        }
+
+
+        //save the exam
+        examRepository.save(exam);
+    }
 }

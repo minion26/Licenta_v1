@@ -28,4 +28,10 @@ public class QuestionController {
     public void createQuestion(@RequestBody QuestionDTO questionDTO, @PathVariable UUID idExam) {
         questionService.createQuestion(questionDTO, idExam);
     }
+
+    @DeleteMapping("/delete/idQuestion={idQuestion}/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteQuestion(@PathVariable UUID idQuestion, @PathVariable UUID idExam) {
+        questionService.deleteQuestion(idQuestion, idExam);
+    }
 }
