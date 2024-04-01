@@ -211,5 +211,14 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(AnswerNotFoundException.class)
+    public ResponseEntity<ErrorObject> handleAnswerNotFound(AnswerNotFoundException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
 
+        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
+
+    }
 }
