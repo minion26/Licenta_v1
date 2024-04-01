@@ -11,4 +11,12 @@ public interface CorrectAnswersExamService {
     void createCorrectAnswersExam(UUID idQuestion, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO);
 
     void createListOfCorrectAnswersExam(UUID idExam, Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO);
+
+    List<CorrectAnswersExamDTO> getAllCorrectAnswersExam();
+
+    List<CorrectAnswersExamDTO> getAllCorrectAnswersExamByExam(UUID idExam);
+
+    void deleteCorrectAnswersExam(UUID idAnswer);
+
+    void updateCorrectAnswersExam(UUID idAnswer, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO);
 }

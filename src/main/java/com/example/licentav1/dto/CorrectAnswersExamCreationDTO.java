@@ -13,5 +13,5 @@ import org.springframework.stereotype.Component;
 @Builder
 public class CorrectAnswersExamCreationDTO {
     String correctAnswer;
-    int score;
+    Integer score;
 }

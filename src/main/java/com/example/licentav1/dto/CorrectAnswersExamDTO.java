@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class CorrectAnswersExamDTO {
+    UUID idAnswerExam;
     String correctAnswer;
     int score;
     UUID idQuestionExam;
