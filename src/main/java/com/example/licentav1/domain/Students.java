@@ -1,5 +1,9 @@
 package com.example.licentav1.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,4 +45,8 @@ public class Students{
     // the Students entity.
     @OneToMany(mappedBy = "student")
     private List<StudentsFollowCourses> courses;
+
+    @OneToMany(mappedBy = "student")
+    @JsonManagedReference
+    private List<StudentExam> studentExams;
 }
