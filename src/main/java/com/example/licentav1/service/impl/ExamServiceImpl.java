@@ -5,9 +5,7 @@ import com.example.licentav1.advice.exceptions.ExamNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.*;
-import com.example.licentav1.mapper.ExamMapper;
-import com.example.licentav1.mapper.QuestionsExamMapper;
-import com.example.licentav1.mapper.TeacherExamMapper;
+import com.example.licentav1.mapper.*;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.ExamService;
 import org.springframework.stereotype.Service;
@@ -20,15 +18,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class ExamServiceImpl implements ExamService {
-    private ExamRepository examRepository;
-    private CoursesRepository coursesRepository;
-    private QuestionRepository questionRepository;
-    private QuestionsExamRepository questionsExamRepository;
-    private TeacherExamRepository teacherExamRepository;
-    private TeachersRepository teachersRepository;
-    private UsersRepository usersRepository;
+    private final ExamRepository examRepository;
+    private final CoursesRepository coursesRepository;
+    private final QuestionRepository questionRepository;
+    private final QuestionsExamRepository questionsExamRepository;
+    private final TeacherExamRepository teacherExamRepository;
+    private final TeachersRepository teachersRepository;
+    private final UsersRepository usersRepository;
+    private final StudentExamRepository studentExamRepository;
+    private final CorrectAnswersExamRepository correctAnswersExamRepository;
 
-    public ExamServiceImpl(ExamRepository examRepository, CoursesRepository coursesRepository,QuestionRepository questionRepository, QuestionsExamRepository questionsExamRepository, TeacherExamRepository teacherExamRepository, TeachersRepository teachersRepository, UsersRepository usersRepository) {
+    public ExamServiceImpl(ExamRepository examRepository, CoursesRepository coursesRepository, QuestionRepository questionRepository, QuestionsExamRepository questionsExamRepository, TeacherExamRepository teacherExamRepository, TeachersRepository teachersRepository, UsersRepository usersRepository, StudentExamRepository studentExamRepository, CorrectAnswersExamRepository correctAnswersExamRepository) {
         this.examRepository = examRepository;
         this.coursesRepository = coursesRepository;
         this.questionRepository = questionRepository;
@@ -36,6 +36,8 @@ public class ExamServiceImpl implements ExamService {
         this.teacherExamRepository = teacherExamRepository;
         this.teachersRepository = teachersRepository;
         this.usersRepository = usersRepository;
+        this.studentExamRepository = studentExamRepository;
+        this.correctAnswersExamRepository = correctAnswersExamRepository;
     }
 
     @Override
@@ -100,6 +102,17 @@ public class ExamServiceImpl implements ExamService {
                         questionDTO.setIdQuestion(qe.getQuestion().getIdQuestion());
                         questionDTO.setQuestionText(qe.getQuestion().getQuestionText());
                         questionDTO.setIdExam(qe.getExam().getIdExam());
+
+
+                        //gasesc raspunsurile corecte
+                        CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(qe.getIdQuestionsExam()).orElse(null);
+                        // transform raspunsurile corecte intr-o lista de stringuri
+                        List<CorrectAnswersExamDTO> list = new ArrayList<>();
+                        if(correctAnswersExam != null){
+                            list.add(CorrectAnswersExamMapper.toDTO(correctAnswersExam));
+                        }
+                        questionDTO.setCorrectAnswers(list);
+
                         questions.add(questionDTO);
                     }
                     examDTO.setQuestions(questions);
@@ -112,6 +125,14 @@ public class ExamServiceImpl implements ExamService {
                     }
                     examDTO.setIdTeachers(teacherIds);
 
+                    //gasesc studentii pentru examen
+
+                    List<StudentExam> studentExams = studentExamRepository.findAllStudentsByExam(exam.getIdExam());
+                    List<StudentExamDTO> studentExamDTOs = studentExams.stream()
+                            .map(StudentExamMapper::toDTO)
+                            .collect(Collectors.toList());
+                    examDTO.setStudentExamDTO(studentExamDTOs);
+
 
                     return examDTO;
                 }
@@ -123,6 +144,11 @@ public class ExamServiceImpl implements ExamService {
     @Override
     public void deleteExam(UUID idExam) {
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //daca sterg examenul, sterg si studentii care au dat examenul sau dau examenul
+        List<StudentExam> studentExams = studentExamRepository.findAllStudentsByExam(exam.getIdExam());
+        studentExamRepository.deleteAll(studentExams);
+
 
         List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
         questionsExamRepository.deleteAll(questionsExams);

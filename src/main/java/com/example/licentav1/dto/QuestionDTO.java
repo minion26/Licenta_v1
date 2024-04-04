@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -17,4 +18,5 @@ public class QuestionDTO {
     private UUID idQuestion;
     private String questionText;
     private UUID idExam;
+    private List<CorrectAnswersExamDTO> correctAnswers;
 }

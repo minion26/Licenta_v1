@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.ExamNotFoundException;
+import com.example.licentav1.advice.exceptions.StudentExamNotFoundException;
 import com.example.licentav1.advice.exceptions.StudentNotFoundException;
 import com.example.licentav1.domain.Exam;
 import com.example.licentav1.domain.StudentExam;
@@ -13,7 +14,11 @@ import com.example.licentav1.repository.StudentExamRepository;
 import com.example.licentav1.repository.StudentsRepository;
 import com.example.licentav1.service.StudentExamService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +55,60 @@ public class StudentExamServiceImpl implements StudentExamService {
         }
 
         return studentExamDTOS;
+    }
+
+    @Override
+    public void uploadStudents(MultipartFile file, UUID idExam) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()));
+        String line;
+        //find the exam by id
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        while ((line = br.readLine()) != null) {
+            String[] data = line.split(",");
+            StudentExam studentsExam = new StudentExam();
+            //studentsExamCreationDTO.setIdStudent(UUID.fromString(data[0]));
+            //find the student
+            Students student = studentsRepository.findByNrMatriculation(data[0]).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+            //set the student to the student-exam
+            studentsExam.setStudent(student);
+            //set the exam to the student-exam
+            studentsExam.setExam(exam);
+            //set the score to the student-exam
+            studentsExam.setScore(-1);
+            //save the student-exam to the database
+            studentExamRepository.save(studentsExam);
+
+        }
+    }
+
+    @Override
+    public void deleteStudent(UUID idStudent) {
+        StudentExam studentExam = studentExamRepository.findByIdStudent(idStudent).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+        studentExamRepository.delete(studentExam);
+    }
+
+    @Override
+    public void updateStudentExam(UUID idStudentExam,StudentExamDTO studentExamDTO) {
+        // Find the student exam entry
+        StudentExam studentExam = studentExamRepository.findById(idStudentExam).orElseThrow(() -> new StudentExamNotFoundException("The student or the exam not found"));
+
+        //update the fields
+        if (studentExamDTO.getIdExam() != null){
+            Exam exam = examRepository.findById(studentExamDTO.getIdExam()).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+            studentExam.setExam(exam);
+        }
+        if (studentExamDTO.getIdStudent() != null){
+            Students student = studentsRepository.findById(studentExamDTO.getIdStudent()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+            studentExam.setStudent(student);
+        }
+        if (studentExamDTO.getScore() != null){
+            studentExam.setScore(studentExamDTO.getScore());
+        }
+
+        //save the updated entry to the database
+        studentExamRepository.save(studentExam);
+
     }
 
 

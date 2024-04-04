@@ -16,5 +16,5 @@ import java.util.UUID;
 public class StudentExamDTO {
     private UUID idStudent;
     private UUID idExam;
-    private int score; // -1 = not graded
+    private Integer score; // -1 = not graded
 }

@@ -26,5 +26,5 @@ public class ExamDTO {
     private LocalDateTime date;
     private String courseName;
     private List<UUID> idTeachers;
-
+    private List<StudentExamDTO> studentExamDTO;
 }

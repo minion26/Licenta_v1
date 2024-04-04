@@ -5,7 +5,9 @@ import com.example.licentav1.dto.StudentExamDTO;
 import com.example.licentav1.service.StudentExamService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +32,31 @@ public class StudentExamController {
     public void createStudentExam(@RequestBody StudentExamCreationDTO studentExamCreationDTO) {
         studentExamService.createStudentExam(studentExamCreationDTO);
     }
+
+    @PostMapping("/upload/idExam={idExam}")
+    @ResponseStatus(HttpStatus.CREATED)
+    // se uploadeaza studentii care urmeaza sa dea examenul
+    public void uploadStudents(@RequestParam("file") MultipartFile file, @PathVariable UUID idExam) throws IOException {
+        if (file.isEmpty()) {
+            throw new IOException("File is empty");
+        }
+        studentExamService.uploadStudents(file, idExam);
+    }
+
+    @DeleteMapping("/delete/idStudent={idStudent}")
+    @ResponseStatus(HttpStatus.OK)
+    // se sterge un student din tabela student_exam
+    public void deleteStudent(@PathVariable UUID idStudent) {
+        studentExamService.deleteStudent(idStudent);
+    }
+
+    @PatchMapping("/update/idStudentExam={idStudentExam}")
+    @ResponseStatus(HttpStatus.OK)
+    // se updateaza un entry din tabela student_exam
+    public void updateStudentExam(@PathVariable UUID idStudentExam,@RequestBody StudentExamDTO studentExamDTO) {
+        studentExamService.updateStudentExam(idStudentExam ,studentExamDTO);
+    }
+
 
 
 
