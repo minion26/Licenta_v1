@@ -10,6 +10,7 @@ import com.example.licentav1.service.StudentAnswersExamService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -113,5 +114,37 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         // for each row that has the id of the student exam, delete the row
         studentAnswersExamRepository.deleteAll(studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam()));
 
+    }
+
+    @Override
+    public List<StudentAnswersExamCreationDTO> getStudentAnswers(UUID idExam, UUID idStudent) {
+        // get the student exam by idExam and idStudent
+        StudentExam studentExam = studentExamRepository.findByIdStudentAndIdExam(idStudent, idExam).orElseThrow(() -> new RuntimeException("Student exam not found"));
+
+        // get the list of student answers exams by student exam
+        List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam());
+
+        // map the list of student answers exams to a list of student answers exam creation DTOs
+        return StudentAnswersExamMapper.toDTOs(studentAnswersExams);
+    }
+
+    @Override
+    public List<StudentAnswersExamCreationDTO> getAllStudentsAnswers(UUID idExam) {
+        // get a list of all students that took the exam
+        List<StudentExam> studentExams = studentExamRepository.findAllByIdExam(idExam);
+
+        // list to hold all the student answers exams
+        List<StudentAnswersExamCreationDTO> allStudentAnswers = new ArrayList<>();
+
+        // for each student, retrieve all their answers
+        for (StudentExam studentExam : studentExams){
+            // get the list of student answers exams by student exam
+            List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam());
+
+            // map the list of student answers exams to a list of student answers exam creation DTOs
+            allStudentAnswers.addAll(StudentAnswersExamMapper.toDTOs(studentAnswersExams));
+        }
+
+        return allStudentAnswers;
     }
 }

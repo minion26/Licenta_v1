@@ -3,15 +3,11 @@ package com.example.licentav1.service.impl;
 import com.example.licentav1.advice.exceptions.ExamNotFoundException;
 import com.example.licentav1.advice.exceptions.StudentExamNotFoundException;
 import com.example.licentav1.advice.exceptions.StudentNotFoundException;
-import com.example.licentav1.domain.Exam;
-import com.example.licentav1.domain.StudentExam;
-import com.example.licentav1.domain.Students;
+import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.StudentExamCreationDTO;
 import com.example.licentav1.dto.StudentExamDTO;
 import com.example.licentav1.mapper.StudentExamMapper;
-import com.example.licentav1.repository.ExamRepository;
-import com.example.licentav1.repository.StudentExamRepository;
-import com.example.licentav1.repository.StudentsRepository;
+import com.example.licentav1.repository.*;
 import com.example.licentav1.service.StudentExamService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,20 +21,29 @@ import java.util.UUID;
 
 @Service
 public class StudentExamServiceImpl implements StudentExamService {
-    public final StudentExamRepository studentExamRepository;
-    public final StudentsRepository studentsRepository;
-    public final ExamRepository examRepository;
+    private final StudentExamRepository studentExamRepository;
+    private final StudentsRepository studentsRepository;
+    private final ExamRepository examRepository;
+    private final StudentAnswersExamRepository studentAnswersExamRepository;
+    private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
 
-    public StudentExamServiceImpl(StudentExamRepository studentExamRepository, StudentsRepository studentsRepository, ExamRepository examRepository) {
+    public StudentExamServiceImpl(StudentExamRepository studentExamRepository, StudentsRepository studentsRepository, ExamRepository examRepository, StudentAnswersExamRepository studentAnswersExamRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
         this.studentExamRepository = studentExamRepository;
         this.studentsRepository = studentsRepository;
         this.examRepository = examRepository;
+        this.studentAnswersExamRepository = studentAnswersExamRepository;
+        this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
     }
 
     @Override
     public void createStudentExam(StudentExamCreationDTO studentExamCreationDTO) {
+        //retireve the student and the exam from the database
         Students student = studentsRepository.findById(studentExamCreationDTO.getIdStudent()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
         Exam exam = examRepository.findById(studentExamCreationDTO.getIdExam()).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        // check if the student is enrolled in the course
+        StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(student.getIdUsers(), exam.getCourse().getIdCourses()).orElseThrow(() -> new StudentNotFoundException("Student not enrolled in the course"));
+
 
         StudentExam studentExam = StudentExamMapper.fromDTO(studentExamCreationDTO, student, exam);
 
@@ -85,6 +90,10 @@ public class StudentExamServiceImpl implements StudentExamService {
     @Override
     public void deleteStudent(UUID idStudent) {
         StudentExam studentExam = studentExamRepository.findByIdStudent(idStudent).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+        // for each row that has the id of the student exam, delete the row
+        studentAnswersExamRepository.deleteAll(studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam()));
+
         studentExamRepository.delete(studentExam);
     }
 

@@ -5,6 +5,7 @@ import com.example.licentav1.service.StudentAnswersExamService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,6 +29,17 @@ public class StudentAnswersExamController {
         studentAnswersExamService.deleteStudentAnswers(idExam, idStudent);
     }
 
+    @GetMapping("/idExam={idExam}/idStudent={idStudent}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<StudentAnswersExamCreationDTO> getStudentAnswers(@PathVariable UUID idExam, @PathVariable UUID idStudent) {
+        return studentAnswersExamService.getStudentAnswers(idExam, idStudent);
+    }
+
+    @GetMapping("/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<StudentAnswersExamCreationDTO> getAllStudentsAnswers(@PathVariable UUID idExam) {
+        return studentAnswersExamService.getAllStudentsAnswers(idExam);
+    }
 
 
 }
