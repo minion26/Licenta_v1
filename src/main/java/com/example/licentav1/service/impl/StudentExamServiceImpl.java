@@ -105,6 +105,9 @@ public class StudentExamServiceImpl implements StudentExamService {
         if (studentExamDTO.getScore() != null){
             studentExam.setScore(studentExamDTO.getScore());
         }
+        if (studentExamDTO.getExamStatus() != null){
+            studentExam.setExamStatus(studentExamDTO.getExamStatus());
+        }
 
         //save the updated entry to the database
         studentExamRepository.save(studentExam);

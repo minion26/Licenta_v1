@@ -17,4 +17,5 @@ public class StudentExamDTO {
     private UUID idStudent;
     private UUID idExam;
     private Integer score; // -1 = not graded
+    private Integer examStatus; // -1 = not started, 0 = failed, 1 = passed
 }

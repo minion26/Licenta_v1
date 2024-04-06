@@ -88,6 +88,17 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
             // save the student exam
             studentExamRepository.save(studentExam);
 
+            // update the exam status of the student exam
+            Integer passingScore = studentExam.getExam().getPassingScore();
+            if (score >= passingScore){
+                studentExam.setExamStatus(1);
+            } else {
+                studentExam.setExamStatus(0);
+            }
+
+            // save the student exam
+            studentExamRepository.save(studentExam);
+
 
         }
 

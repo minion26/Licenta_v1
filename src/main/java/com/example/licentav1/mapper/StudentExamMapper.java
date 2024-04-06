@@ -17,6 +17,7 @@ public class StudentExamMapper {
                 .student(student)
                 .exam(exam)
                 .score(-1)
+                // .examStatus(-1) e by default
                 .build();
 
     }
@@ -26,6 +27,7 @@ public class StudentExamMapper {
                 .idStudent(studentExam.getStudent().getIdUsers())
                 .idExam(studentExam.getExam().getIdExam())
                 .score(studentExam.getScore())
+                .examStatus(studentExam.getExamStatus())
                 .build();
     }
 }
