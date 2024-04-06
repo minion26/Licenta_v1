@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -37,4 +38,7 @@ public class StudentExam {
 
     @Column(name = "score")
     private int score;
+
+    @OneToMany(mappedBy = "studentExam")
+    private List<StudentAnswersExam> studentAnswersExams;
 }

@@ -30,4 +30,8 @@ public class QuestionsExam {
 
     @OneToMany(mappedBy = "questionsExam", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CorrectAnswersExam> correctAnswersExams;
+
+
+    @OneToOne(mappedBy = "questionsExam")
+    private StudentAnswersExam studentAnswersExam;
 }
