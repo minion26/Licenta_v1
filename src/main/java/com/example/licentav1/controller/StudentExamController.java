@@ -43,11 +43,11 @@ public class StudentExamController {
         studentExamService.uploadStudents(file, idExam);
     }
 
-    @DeleteMapping("/delete/idStudent={idStudent}")
+    @DeleteMapping("/delete/idStudentExam={idStudentExam}")
     @ResponseStatus(HttpStatus.OK)
     // se sterge un student din tabela student_exam
-    public void deleteStudent(@PathVariable UUID idStudent) {
-        studentExamService.deleteStudent(idStudent);
+    public void deleteStudent(@PathVariable UUID idStudentExam) {
+        studentExamService.deleteStudent(idStudentExam);
     }
 
     @PatchMapping("/update/idStudentExam={idStudentExam}")

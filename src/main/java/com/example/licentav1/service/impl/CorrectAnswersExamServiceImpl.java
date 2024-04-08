@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.AnswerNotFoundException;
+import com.example.licentav1.advice.exceptions.CorrectAnswerAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.ExamNotFoundException;
 import com.example.licentav1.advice.exceptions.QuestionsExamNotFoundException;
 import com.example.licentav1.domain.CorrectAnswersExam;
@@ -42,6 +43,12 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
         QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
 
+        // Check if a correct answer already exists for the given question
+        CorrectAnswersExam existingCorrectAnswer = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElse(null);
+        if (existingCorrectAnswer != null) {
+            throw new CorrectAnswerAlreadyExistsException("A correct answer already exists for this question");
+        }
+
         CorrectAnswersExam correctAnswersExam = CorrectAnswersExamMapper.fromDTO(correctAnswersExamCreationDTO, questionsExam);
 
         correctAnswersExamRepository.save(correctAnswersExam);
@@ -54,7 +61,16 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         //List<Question> questions = questionRepository.findAllByExam(exam);
 
         mapOfCorrectAnswersExamCreationDTO.forEach((idQuestion, correctAnswersExamCreationDTO) -> {
-            Question q = questionRepository.findById(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+           //Question q = questionRepository.findById(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+
+            QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+
+            // Check if a correct answer already exists for the given question
+            CorrectAnswersExam existingCorrectAnswer = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElse(null);
+            if (existingCorrectAnswer != null) {
+                throw new CorrectAnswerAlreadyExistsException("A correct answer already exists for question id: " + idQuestion);
+            }
+
             CorrectAnswersExam correctAnswersExam = CorrectAnswersExamMapper.fromDTO(correctAnswersExamCreationDTO, questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found")));
             correctAnswersExamRepository.save(correctAnswersExam);
         });

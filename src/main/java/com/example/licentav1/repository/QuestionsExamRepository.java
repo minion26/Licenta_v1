@@ -24,4 +24,5 @@ public interface QuestionsExamRepository extends JpaRepository<QuestionsExam, UU
 
     @Query(value="SELECT * FROM questions_exam qe WHERE qe.id_exam = :idExam", nativeQuery = true)
     List<QuestionsExam> findByIdExam(UUID idExam);
+
 }

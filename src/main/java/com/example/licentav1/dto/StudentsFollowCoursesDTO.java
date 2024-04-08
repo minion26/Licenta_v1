@@ -6,12 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class StudentsFollowCoursesDTO {
+    private UUID idStudentFollowCourse;
     private String studentName;
     private String courseName;
 

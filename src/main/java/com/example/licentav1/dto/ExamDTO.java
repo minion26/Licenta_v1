@@ -18,6 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ExamDTO {
+    private UUID idExam;
     private String name;
     private List<QuestionDTO> questions;
     private Integer timeInMinutes;

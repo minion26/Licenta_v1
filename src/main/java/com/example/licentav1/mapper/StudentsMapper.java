@@ -13,6 +13,7 @@ public class StudentsMapper {
 
     public static StudentsDTO toDTO(Users users, Students students) {
         return StudentsDTO.builder()
+                .idUsers(users.getIdUsers())
                 .lastName(users.getLastName())
                 .firstName(users.getFirstName())
                 .facultyEmail(users.getFacultyEmail())

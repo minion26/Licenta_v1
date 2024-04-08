@@ -15,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class StudentsDTO {
+    private UUID idUsers;
     private String firstName;
     private String lastName;
     private String facultyEmail;

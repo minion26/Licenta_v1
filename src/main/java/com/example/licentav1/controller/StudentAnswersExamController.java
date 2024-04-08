@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/student-correct-answers")
+@RequestMapping("api/v1/student-answers")
 public class StudentAnswersExamController {
     private final StudentAnswersExamService studentAnswersExamService;
 

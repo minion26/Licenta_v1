@@ -88,12 +88,13 @@ public class StudentExamServiceImpl implements StudentExamService {
     }
 
     @Override
-    public void deleteStudent(UUID idStudent) {
-        StudentExam studentExam = studentExamRepository.findByIdStudent(idStudent).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+    public void deleteStudent(UUID idStudentExam) {
+        StudentExam studentExam = studentExamRepository.findById(idStudentExam).orElseThrow(() -> new StudentExamNotFoundException("The row student-exam not found"));
 
         // for each row that has the id of the student exam, delete the row
         studentAnswersExamRepository.deleteAll(studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam()));
 
+        //delete the student-exam row from the database
         studentExamRepository.delete(studentExam);
     }
 

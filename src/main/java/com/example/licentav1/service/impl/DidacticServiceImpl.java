@@ -96,6 +96,8 @@ public class DidacticServiceImpl implements DidacticService {
                 .map(didactic -> {
                     DidacticDTO dto = new DidacticDTO();
 
+                    dto.setIdDidactic(didactic.getIdDidactic());
+
                     //Step 2: Fetch the teacher and course for each didactic entry
                     Teachers teacher = teacherRepository.findById(didactic.getTeachers().getIdUsers()).orElse(null);
                     Courses course = coursesRepository.findById(didactic.getCourses().getIdCourses()).orElse(null);

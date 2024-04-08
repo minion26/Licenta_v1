@@ -75,6 +75,9 @@ public class StudentsFollowCoursesServiceImpl implements StudentsFollowCoursesSe
                 .map(std -> {
                     StudentsFollowCoursesDTO studentsFollowCoursesDTO = new StudentsFollowCoursesDTO();
 
+                    //Set the id of the student-course relation
+                    studentsFollowCoursesDTO.setIdStudentFollowCourse(std.getIdStudentsFollowCourses());
+
                     //Fetch the student and course
                     Students student = studentsRepository.findById(std.getStudent().getIdUsers()).orElse(null);
                     Courses course = coursesRepository.findById(std.getCourse().getIdCourses()).orElse(null);

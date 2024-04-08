@@ -1,9 +1,11 @@
 package com.example.licentav1.domain;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -27,4 +29,8 @@ public class Question {
     @JoinColumn(name="id_exam")
     @JsonBackReference
     private Exam exam;
+
+    @OneToMany(mappedBy = "question")
+    @JsonManagedReference
+    private List<QuestionsExam> questionsExams;
 }

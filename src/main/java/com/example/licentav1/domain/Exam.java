@@ -61,4 +61,8 @@ public class Exam {
     @OneToMany(mappedBy = "exam")
     @JsonManagedReference
     private List<StudentExam> studentExams;
+
+    @OneToMany(mappedBy = "exam")
+    @JsonManagedReference
+    private List<QuestionsExam> questionsExams;
 }

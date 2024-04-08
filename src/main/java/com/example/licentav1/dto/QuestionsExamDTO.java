@@ -1,5 +1,7 @@
 package com.example.licentav1.dto;
 
+import com.example.licentav1.domain.Exam;
+import com.example.licentav1.domain.Question;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +15,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TeachersDTO {
-    private UUID idUsers;
-    private String firstName;
-    private String lastName;
-    private String facultyEmail;
-    private String personalEmail;
-    private String idTeacher;
-    private String degree;
+public class QuestionsExamDTO {
+    private UUID idQuestionsExam;
+    private UUID questionId;
+    private UUID examId;
+
 }

@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class StudentExamDTO {
+    private UUID idStudentExam;
     private UUID idStudent;
     private UUID idExam;
     private Integer score; // -1 = not graded

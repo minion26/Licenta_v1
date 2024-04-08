@@ -17,13 +17,14 @@ public class StudentExamMapper {
                 .student(student)
                 .exam(exam)
                 .score(-1)
-                // .examStatus(-1) e by default
+                .examStatus(-1) //e by default
                 .build();
 
     }
 
     public static StudentExamDTO toDTO(StudentExam studentExam) {
         return StudentExamDTO.builder()
+                .idStudentExam(studentExam.getIdStudentExam())
                 .idStudent(studentExam.getStudent().getIdUsers())
                 .idExam(studentExam.getExam().getIdExam())
                 .score(studentExam.getScore())

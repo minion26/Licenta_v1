@@ -11,6 +11,7 @@ import java.util.UUID;
 public class TeachersMapper {
     public static TeachersDTO toDTO(Users users, Teachers teachers) {
         return TeachersDTO.builder()
+                .idUsers(users.getIdUsers())
                 .firstName(users.getFirstName())
                 .lastName(users.getLastName())
                 .facultyEmail(users.getFacultyEmail())

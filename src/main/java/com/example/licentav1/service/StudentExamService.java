@@ -16,7 +16,7 @@ public interface StudentExamService {
 
     void uploadStudents(MultipartFile file, UUID idExam) throws IOException;
 
-    void deleteStudent(UUID idStudent);
+    void deleteStudent(UUID idStudentExam);
 
     void updateStudentExam(UUID idStudentExam,StudentExamDTO studentExamDTO);
 }

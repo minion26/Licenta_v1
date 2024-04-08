@@ -23,6 +23,7 @@ public class LecturesMapper {
 
     public static LecturesDTO toDTO(Lectures lecture, Courses course) {
         return LecturesDTO.builder()
+                .idLecture(lecture.getIdLecture())
                 .name(lecture.getName())
                 .description(lecture.getDescription())
                 .week(lecture.getWeek())

@@ -25,6 +25,7 @@ public class ExamMapper {
 
     public static ExamDTO toDTO(Exam exam){
         return ExamDTO.builder()
+                .idExam(exam.getIdExam())
                 .name(exam.getName())
                 .timeInMinutes(exam.getTimeInMinutes())
                 .totalScore(exam.getTotalScore())
