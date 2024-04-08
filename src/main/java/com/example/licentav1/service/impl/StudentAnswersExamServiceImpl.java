@@ -66,22 +66,29 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
             StudentAnswersExam studentAnswersExam = StudentAnswersExamMapper.fromDTO(questionAnswersDTO, studentExam, questionsExam);
 
 
-
             // salvez obiectul in baza de date
             studentAnswersExamRepository.save(studentAnswersExam);
 
             // Compare student's answer with correct answer and increment score if correct
             String studentAnswer = studentAnswersExam.getStudentAnswer();
             String correctAnswer = correctAnswersExam.getCorrectAnswer();
+
             // trim the studentAnswer of any leading or trailing whitespaces
             studentAnswer = studentAnswer.trim();
             // trim the correctAnswer of any leading or trailing whitespaces
             correctAnswer = correctAnswer.trim();
-//            System.out.println("Student answer: " + studentAnswer);
-//            System.out.println("Correct answer: " + correctAnswer);
-            if (correctAnswer.equalsIgnoreCase(studentAnswer)){
-                score = score + correctAnswersExam.getScore();
+
+            // compare the student answer with the correct answer
+            int differences = compareAnswers(studentAnswer, correctAnswer);
+            System.out.println("Differences: " + differences);
+            if (differences <= 2) {
+                score += correctAnswersExam.getScore();
+                System.out.println("E OK! Score: " + score);
+            }else{
+                //TODO: de trimis email profesorului ca sa o reviziuasca manual
             }
+
+
 
             // update the score of the student exam
             studentExam.setScore(score);
@@ -146,5 +153,30 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         return allStudentAnswers;
+    }
+
+
+    private int compareAnswers(String studentAnswer, String correctAnswer) {
+        int[][] dp = new int[studentAnswer.length() + 1][correctAnswer.length() + 1];
+
+        for (int i = 0; i <= studentAnswer.length(); i++) {
+            for (int j = 0; j <= correctAnswer.length(); j++) {
+                if (i == 0) {
+                    dp[i][j] = j;
+                } else if (j == 0) {
+                    dp[i][j] = i;
+                } else {
+                    dp[i][j] = Math.min(Math.min(dp[i - 1][j - 1]
+                                    + costOfSubstitution(studentAnswer.charAt(i - 1), correctAnswer.charAt(j - 1)), dp[i - 1][j] + 1),
+                            dp[i][j - 1] + 1);
+                }
+            }
+        }
+
+        return dp[studentAnswer.length()][correctAnswer.length()];
+    }
+
+    private int costOfSubstitution(char a, char b) {
+        return a == b ? 0 : 1;
     }
 }
