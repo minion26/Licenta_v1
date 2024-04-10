@@ -1,5 +1,6 @@
 package com.example.licentav1.controller;
 
+import com.example.licentav1.dto.ReviewStudentAnswersDTO;
 import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
 import com.example.licentav1.service.StudentAnswersExamService;
 import org.springframework.http.HttpStatus;
@@ -39,6 +40,12 @@ public class StudentAnswersExamController {
     @ResponseStatus(HttpStatus.OK)
     public List<StudentAnswersExamCreationDTO> getAllStudentsAnswers(@PathVariable UUID idExam) {
         return studentAnswersExamService.getAllStudentsAnswers(idExam);
+    }
+
+    @GetMapping("/needs-review")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ReviewStudentAnswersDTO> getStudentsAnswersForReview() {
+        return studentAnswersExamService.getStudentsAnswersForReview();
     }
 
 

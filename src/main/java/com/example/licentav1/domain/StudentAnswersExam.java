@@ -29,4 +29,7 @@ public class StudentAnswersExam {
     @OneToOne
     @JoinColumn(name = "id_question_exam", nullable = false)
     private QuestionsExam questionsExam;
+
+    @Column(name="needs_review")
+    private boolean needsReview;
 }

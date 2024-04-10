@@ -16,4 +16,6 @@ public interface StudentAnswersExamRepository extends JpaRepository<StudentAnswe
     @Query(value="SELECT * FROM student_answers_exam WHERE id_student_exam = :idStudentExam", nativeQuery = true)
     List<StudentAnswersExam> findAllByStudentExam(@Param("idStudentExam") UUID idStudentExam);
 
+    @Query(value="SELECT * FROM student_answers_exam WHERE id_student_exam = :idStudentExam AND needs_review = :needsReview", nativeQuery = true)
+    List<StudentAnswersExam> findAllByStudentExamAndNeedsReview(@Param("idStudentExam") UUID idStudentExam,@Param("needsReview") boolean b);
 }

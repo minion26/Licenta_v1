@@ -3,11 +3,13 @@ package com.example.licentav1.service.impl;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.QuestionAnswersDTO;
 import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
+import com.example.licentav1.mapper.ReviewStudentAnswersMapper;
 import com.example.licentav1.mapper.StudentAnswersExamMapper;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.ExamService;
 import com.example.licentav1.service.StudentAnswersExamService;
 import org.springframework.stereotype.Service;
+import com.example.licentav1.dto.ReviewStudentAnswersDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -22,15 +24,19 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
     private final ExamRepository examRepository;
     private final StudentsRepository studentsRepository;
     private final CorrectAnswersExamRepository correctAnswersExamRepository;
+    private final CoursesRepository coursesRepository;
+    private final DidacticRepository didacticRepository;
 
 
-    public StudentAnswersExamServiceImpl(StudentAnswersExamRepository studentAnswersExamRepository, StudentExamRepository studentExamRepository, QuestionsExamRepository questionsExamRepository, ExamRepository examRepository, StudentsRepository studentsRepository, CorrectAnswersExamRepository correctAnswersExamRepository) {
+    public StudentAnswersExamServiceImpl(StudentAnswersExamRepository studentAnswersExamRepository, StudentExamRepository studentExamRepository, QuestionsExamRepository questionsExamRepository, ExamRepository examRepository, StudentsRepository studentsRepository, CorrectAnswersExamRepository correctAnswersExamRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository) {
         this.studentAnswersExamRepository = studentAnswersExamRepository;
         this.studentExamRepository = studentExamRepository;
         this.questionsExamRepository = questionsExamRepository;
         this.examRepository = examRepository;
         this.studentsRepository = studentsRepository;
         this.correctAnswersExamRepository = correctAnswersExamRepository;
+        this.coursesRepository = coursesRepository;
+        this.didacticRepository = didacticRepository;
     }
 
 
@@ -85,7 +91,10 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
                 score += correctAnswersExam.getScore();
                 System.out.println("E OK! Score: " + score);
             }else{
-                //TODO: de trimis email profesorului ca sa o reviziuasca manual
+                // coloana needs_review din tabelul student_answers_exam va fi setata pe true
+                // si o sa apara in lista de raspunsuri care trebuie revizuite
+                studentAnswersExam.setNeedsReview(true);
+                studentAnswersExamRepository.save(studentAnswersExam);
             }
 
 
@@ -153,6 +162,49 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         return allStudentAnswers;
+    }
+
+    @Override
+    public List<ReviewStudentAnswersDTO> getStudentsAnswersForReview() {
+        List<ReviewStudentAnswersDTO> reviewStudentAnswersDTOS = new ArrayList<>();
+        //for each exam
+        List<Exam> exams = examRepository.findAll();
+        for (Exam exam : exams){
+            UUID idExam = exam.getIdExam();
+
+            // get the course of the exam
+            Courses course = coursesRepository.findById(exam.getCourse().getIdCourses()).orElseThrow(() -> new RuntimeException("Course not found"));
+
+            //get the didactic of the course
+            List<Didactic> didactic = didacticRepository.findAllByIdCourses(course.getIdCourses()).orElseThrow(() -> new RuntimeException("Didactic not found"));
+
+            //get the list of teachers
+            List<Teachers> teachers = new ArrayList<>();
+            for (Didactic did : didactic){
+                teachers.add(did.getTeachers());
+            }
+
+            // list of all students that took the exam
+            List<StudentExam> studentExams = studentExamRepository.findAllByIdExam(idExam);
+
+            // for each student, retrieve all their answers that need review
+            for (StudentExam studentExam : studentExams){
+                // get the list of student answers exams by student exam where needsReview is true
+                List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExamAndNeedsReview(studentExam.getIdStudentExam(), true);
+
+                // map the list of student answers exams to a list of review student answers DTOs
+                for (StudentAnswersExam studentAnswersExam : studentAnswersExams) {
+                    ReviewStudentAnswersDTO reviewStudentAnswersDTO = ReviewStudentAnswersMapper.toDTO(studentExam, studentAnswersExam, exam, teachers);
+
+                    // add the DTO to the list
+                    reviewStudentAnswersDTOS.add(reviewStudentAnswersDTO);
+                }
+            }
+        }
+
+
+        return reviewStudentAnswersDTOS;
+
     }
 
 
