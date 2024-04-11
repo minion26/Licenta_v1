@@ -36,8 +36,8 @@ public class Teachers {
             inverseJoinColumns = @JoinColumn(name = "id_exam")
     )
     @JsonManagedReference
-    List<Exam> exams;
+    private List<Exam> exams;
 
     @ManyToMany(mappedBy = "teachers")
-    List<Courses> courses;
+    private List<Courses> courses;
 }

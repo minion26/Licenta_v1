@@ -23,27 +23,27 @@ public class Exam {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_exam")
-    UUID idExam;
+    private UUID idExam;
 
     @Column(name="name")
-    String name;
+    private String name;
 
 
     @Column(name="time_in_minutes")
-    Integer timeInMinutes;
+    private Integer timeInMinutes;
 
     @Column(name="total_score")
-    Integer totalScore;
+    private Integer totalScore;
 
     @Column(name="passing_score")
-    Integer passingScore;
+    private Integer passingScore;
 
     @Column(name="date")
-    LocalDateTime date;
+    private LocalDateTime date;
 
     @ManyToOne
     @JoinColumn(name="course_id")
-    Courses course;
+    private Courses course;
 
     @ManyToMany
     @JoinTable(
@@ -52,11 +52,11 @@ public class Exam {
             inverseJoinColumns = @JoinColumn(name = "id_teacher")
     )
     @JsonBackReference
-    List<Teachers> teachers;
+    private List<Teachers> teachers;
 
     @OneToMany(mappedBy = "exam")
     @JsonManagedReference
-    List<Question> questionsList;
+    private List<Question> questionsList;
 
     @OneToMany(mappedBy = "exam")
     @JsonManagedReference

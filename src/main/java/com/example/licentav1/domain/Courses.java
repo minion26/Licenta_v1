@@ -53,5 +53,5 @@ public class Courses {
             joinColumns = @JoinColumn(name = "id_courses"),
             inverseJoinColumns = @JoinColumn(name = "id_teacher")
     )
-    List<Teachers> teachers;
+    private List<Teachers> teachers;
 }

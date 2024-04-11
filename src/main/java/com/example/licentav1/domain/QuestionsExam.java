@@ -18,7 +18,7 @@ public class QuestionsExam {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_question_exam")
-    UUID idQuestionsExam;
+    private UUID idQuestionsExam;
 
     @ManyToOne
     @JoinColumn(name = "question", nullable = false)

@@ -1,5 +1,6 @@
 package com.example.licentav1.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,22 +19,22 @@ public class Lectures {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_lecture")
-    UUID idLecture;
+    private UUID idLecture;
 
     @Column(name="name")
-    String name;
+    private String name;
 
     @Column(name="description")
-    String description;
+    private String description;
 
     @Column(name="week")
-    Integer week;
+    private Integer week;
 
     @Column(name="semester")
-    Integer semester;
+    private Integer semester;
 
     @Column(name="year")
-    Integer year;
+    private Integer year;
 
     @ManyToOne
     @JoinColumn(name = "id_course", nullable = false)
@@ -41,4 +42,9 @@ public class Lectures {
 
     @OneToMany(mappedBy="lectures")
     private List<Materials> materials;
+
+    // mappedBy = "lectures" indică faptul că relația este gestionată de câmpul lecture din clasa Homework.
+    @OneToMany(mappedBy = "lectures")
+    @JsonManagedReference
+    private List<Homework> homeworks;
 }
