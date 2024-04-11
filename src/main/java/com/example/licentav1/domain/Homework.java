@@ -23,12 +23,6 @@ public class Homework {
     @Column(name = "id_homework")
     private UUID idHomework;
 
-    @Column(name="title")
-    private String title;
-
-    @Column(name="description")
-    private String description;
-
     @Column(name="grade")
     private Integer grade;
 
@@ -39,9 +33,8 @@ public class Homework {
     private String fileUrl;
 
     @ManyToOne
-    @JoinColumn(name = "id_lecture", nullable = false)
-    @JsonBackReference
-    private Lectures lectures;
+    @JoinColumn(name = "id_homework_announcement", nullable = false)
+    private HomeworkAnnouncements homeworkAnnouncements;
 
     @OneToMany(mappedBy = "homework")
     @JsonManagedReference

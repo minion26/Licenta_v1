@@ -1,5 +1,6 @@
 package com.example.licentav1.domain;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,8 +44,6 @@ public class Lectures {
     @OneToMany(mappedBy="lectures")
     private List<Materials> materials;
 
-    // mappedBy = "lectures" indică faptul că relația este gestionată de câmpul lecture din clasa Homework.
     @OneToMany(mappedBy = "lectures")
-    @JsonManagedReference
-    private List<Homework> homeworks;
+    private List<HomeworkAnnouncements> homeworkAnnouncements;
 }

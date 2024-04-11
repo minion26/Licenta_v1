@@ -243,4 +243,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.CONFLICT);
 
     }
+
+    @ExceptionHandler(LectureNotFoundException.class)
+    public ResponseEntity<ErrorObject> handleLectureNotFoundException(LectureNotFoundException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
+
+    }
 }
