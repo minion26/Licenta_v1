@@ -1,5 +1,6 @@
 package com.example.licentav1.service;
 
+import com.example.licentav1.dto.CorrectAnswersExamCreationDTO;
 import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
 import com.example.licentav1.dto.ReviewStudentAnswersDTO;
 
@@ -16,4 +17,6 @@ public interface StudentAnswersExamService {
     List<StudentAnswersExamCreationDTO> getAllStudentsAnswers(UUID idExam);
 
     List<ReviewStudentAnswersDTO> getStudentsAnswersForReview();
+
+    void setReviewed(UUID idStudentAnswerExam,CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO);
 }

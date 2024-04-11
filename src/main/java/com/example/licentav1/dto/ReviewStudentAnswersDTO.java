@@ -15,6 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ReviewStudentAnswersDTO {
+    private UUID idStudentAnswerExam;
     private UUID idStudent;
     private List<UUID> idTeacher;
     private UUID idExam;

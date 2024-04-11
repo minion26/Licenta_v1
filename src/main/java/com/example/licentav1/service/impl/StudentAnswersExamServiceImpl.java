@@ -1,6 +1,8 @@
 package com.example.licentav1.service.impl;
 
+import com.example.licentav1.advice.exceptions.AnswerNotFoundException;
 import com.example.licentav1.domain.*;
+import com.example.licentav1.dto.CorrectAnswersExamCreationDTO;
 import com.example.licentav1.dto.QuestionAnswersDTO;
 import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
 import com.example.licentav1.mapper.ReviewStudentAnswersMapper;
@@ -205,6 +207,37 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
 
         return reviewStudentAnswersDTOS;
 
+    }
+
+    @Override
+    public void setReviewed(UUID idStudentAnswerExam, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
+        // get the student answer exam by id
+        StudentAnswersExam studentAnswersExam = studentAnswersExamRepository.findById(idStudentAnswerExam).orElseThrow(() -> new AnswerNotFoundException("Student answer exam not found"));
+
+        // get the student exam
+        StudentExam studentExam = studentAnswersExam.getStudentExam();
+
+        // set the needs review to false
+        studentAnswersExam.setNeedsReview(false);
+
+        if (correctAnswersExamCreationDTO.getScore() != null) {
+            // change the score of the student exam
+            int newScore = correctAnswersExamCreationDTO.getScore();
+
+            // get the correct answers exam
+            CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(studentAnswersExam.getQuestionsExam().getIdQuestionsExam()).orElseThrow(() -> new RuntimeException("Correct answers exam not found"));
+
+            // get the old score
+            int oldScore = correctAnswersExam.getScore();
+
+            // update the score of the student exam
+            studentExam.setScore(studentExam.getScore() - oldScore + newScore);
+        }
+        // save the student exam
+        studentExamRepository.save(studentExam);
+
+        // save the student answer exam
+        studentAnswersExamRepository.save(studentAnswersExam);
     }
 
 

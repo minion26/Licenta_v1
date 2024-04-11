@@ -1,5 +1,6 @@
 package com.example.licentav1.controller;
 
+import com.example.licentav1.dto.CorrectAnswersExamCreationDTO;
 import com.example.licentav1.dto.ReviewStudentAnswersDTO;
 import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
 import com.example.licentav1.service.StudentAnswersExamService;
@@ -46,6 +47,12 @@ public class StudentAnswersExamController {
     @ResponseStatus(HttpStatus.OK)
     public List<ReviewStudentAnswersDTO> getStudentsAnswersForReview() {
         return studentAnswersExamService.getStudentsAnswersForReview();
+    }
+
+    @PostMapping("/reviewed/idStudentAnswerExam={idStudentAnswerExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public void setReviewed(@PathVariable UUID idStudentAnswerExam, @RequestBody CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
+        studentAnswersExamService.setReviewed(idStudentAnswerExam, correctAnswersExamCreationDTO);
     }
 
 

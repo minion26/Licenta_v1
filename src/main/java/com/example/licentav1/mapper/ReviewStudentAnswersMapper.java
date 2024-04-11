@@ -15,6 +15,7 @@ import java.util.UUID;
 public class ReviewStudentAnswersMapper {
     public static ReviewStudentAnswersDTO toDTO(StudentExam studentExam, StudentAnswersExam studentAnswersExam, Exam exam, List<Teachers> teachers) {
         ReviewStudentAnswersDTO reviewStudentAnswersDTO = new ReviewStudentAnswersDTO();
+        reviewStudentAnswersDTO.setIdStudentAnswerExam(studentAnswersExam.getIdStudentAnswerExam());
         reviewStudentAnswersDTO.setIdStudent(studentExam.getStudent().getIdUsers());
 
         List<UUID> idOfTeachers = new ArrayList<>();
