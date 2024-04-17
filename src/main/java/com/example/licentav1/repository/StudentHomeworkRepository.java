@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,4 +20,10 @@ public interface StudentHomeworkRepository extends JpaRepository<StudentHomework
     Optional<StudentHomework> findByIdStudentAndIdHomeworkAnnouncement(@Param("idStudent") UUID idStudent,@Param("idHomeworkAnnouncement") UUID idHomeworkAnnouncement);
 
     void deleteByHomework(Homework homework);
+
+    @Query(value = "SELECT * FROM student_homework WHERE id_homework_announcement = :idHomeworkAnnouncement", nativeQuery = true)
+    List<StudentHomework> findAllByIdHomeworkAnnouncement(@Param("idHomeworkAnnouncement") UUID idHomeworkAnnouncement);
+
+    @Query(value = "SELECT * FROM student_homework WHERE id_homework = :idHomework", nativeQuery = true)
+    Optional<StudentHomework> findByIdHomework(@Param("idHomework") UUID idHomework);
 }

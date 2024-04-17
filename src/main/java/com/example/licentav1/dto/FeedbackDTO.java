@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -15,14 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HomeworkDTO {
-    UUID idHomework;
-    UUID idStudent;
-    String nrMatricol;
-    String firstNameStudent;
-    String lastNameStudent;
-    Integer grade;
-    LocalDateTime uploadDate;
-    List<String> fileName;
-
+public class FeedbackDTO {
+    private UUID idFeedback;
+    private String content;
 }

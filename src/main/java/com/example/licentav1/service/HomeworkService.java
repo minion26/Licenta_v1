@@ -1,6 +1,8 @@
 package com.example.licentav1.service;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.licentav1.dto.HomeworkDTO;
+import com.example.licentav1.dto.HomeworkGradeDTO;
 import org.springframework.core.io.Resource;
 import com.amazonaws.services.s3.model.S3Object;
 import org.springframework.http.ResponseEntity;
@@ -23,4 +25,8 @@ public interface HomeworkService {
     void deleteHomeworkFile(UUID id);
 
     void updateHomeworkFile(MultipartFile file, UUID id);
+
+    List<HomeworkDTO> getAllHomeworks(UUID idHomeworkAnnouncement);
+
+    void gradeHomework(UUID idHomework, HomeworkGradeDTO homeworkGradeDTO);
 }

@@ -1,6 +1,8 @@
 package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.licentav1.dto.HomeworkDTO;
+import com.example.licentav1.dto.HomeworkGradeDTO;
 import org.springframework.core.io.Resource;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -34,14 +36,16 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final StudentsRepository studentsRepository;
     private final S3Service s3Service;
     private final HomeworkAnnouncementsRepository homeworkAnnouncementsRepository;
+    private final UsersRepository usersRepository;
 
-    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository) {
+    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository) {
         this.homeworkRepository = homeworkRepository;
         this.studentHomeworkRepository = studentHomeworkRepository;
         this.homeworkFilesRepository = homeworkFilesRepository;
         this.studentsRepository = studentsRepository;
         this.s3Service = s3Service;
         this.homeworkAnnouncementsRepository = homeworkAnnouncementsRepository;
+        this.usersRepository = usersRepository;
     }
 
 
@@ -247,5 +251,53 @@ public class HomeworkServiceImpl implements HomeworkService {
         }else{
             throw new RuntimeException("Homework file not found");
         }
+    }
+
+    @Override
+    public List<HomeworkDTO> getAllHomeworks(UUID idHomeworkAnnouncement) {
+        // am enuntul temei
+        HomeworkAnnouncements homeworkAnnouncements = homeworkAnnouncementsRepository.findById(idHomeworkAnnouncement).orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        // am lista de studenti care au incarcat tema
+        List<StudentHomework> studentHomeworkList = studentHomeworkRepository.findAllByIdHomeworkAnnouncement(idHomeworkAnnouncement);
+
+        // vreau toate temele incarcate de studenti
+        List<HomeworkDTO> homeworkDTOList = new ArrayList<>();
+
+        for (StudentHomework studentHomework : studentHomeworkList) {
+            Students student = studentHomework.getStudent();
+            Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new RuntimeException("User not found"));
+            List<HomeworkFiles> homeworkFiles = studentHomework.getHomework().getHomeworkFiles();
+            Homework homework = studentHomework.getHomework();
+
+            HomeworkDTO homeworkDTO = new HomeworkDTO();
+
+            homeworkDTO.setIdHomework(studentHomework.getHomework().getIdHomework());
+            homeworkDTO.setIdStudent(student.getIdUsers());
+            homeworkDTO.setNrMatricol(student.getNrMatriculation());
+            homeworkDTO.setFirstNameStudent(user.getFirstName());
+            homeworkDTO.setLastNameStudent(user.getLastName());
+            homeworkDTO.setGrade(homework.getGrade());
+            homeworkDTO.setUploadDate(homework.getDueDate());
+
+            List<String> filesNames = new ArrayList<>();
+            for (HomeworkFiles homeworkFile : homeworkFiles) {
+                filesNames.add(homeworkFile.getFileUrl());
+            }
+
+            homeworkDTO.setFileName(filesNames);
+
+            homeworkDTOList.add(homeworkDTO);
+        }
+
+        return homeworkDTOList;
+    }
+
+    @Override
+    public void gradeHomework(UUID idHomework, HomeworkGradeDTO homeworkGradeDTO) {
+        Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        homework.setGrade(homeworkGradeDTO.getGrade());
+        homeworkRepository.save(homework);
     }
 }

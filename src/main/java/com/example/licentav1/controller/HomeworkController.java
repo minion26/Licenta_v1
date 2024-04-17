@@ -2,6 +2,8 @@ package com.example.licentav1.controller;
 
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.licentav1.dto.HomeworkDTO;
+import com.example.licentav1.dto.HomeworkGradeDTO;
 import com.example.licentav1.service.HomeworkService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -52,4 +54,15 @@ public class HomeworkController {
         homeworkService.updateHomeworkFile(file, id);
     }
 
+    @GetMapping("/all/idHomeworkAnnouncement={idHomeworkAnnouncement}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<HomeworkDTO> getAllHomeworks(@PathVariable("idHomeworkAnnouncement") UUID idHomeworkAnnouncement) {
+        return homeworkService.getAllHomeworks(idHomeworkAnnouncement);
+    }
+
+    @PatchMapping("/grade/idHomework={idHomework}")
+    @ResponseStatus(HttpStatus.OK)
+    public void gradeHomework(@PathVariable("idHomework") UUID idHomework, @RequestBody HomeworkGradeDTO homeworkGradeDTO){
+        homeworkService.gradeHomework(idHomework, homeworkGradeDTO);
+    }
 }
