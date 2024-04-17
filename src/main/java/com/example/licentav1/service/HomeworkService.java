@@ -1,5 +1,26 @@
 package com.example.licentav1.service;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import org.springframework.core.io.Resource;
+import com.amazonaws.services.s3.model.S3Object;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+
 public interface HomeworkService {
 
+    void uploadHomework(List<MultipartFile> file, UUID idHomeworkAnnouncement, UUID idStudent) throws IOException;
+
+    S3Object loadFileAsResource(String fileName) throws IOException;
+
+    ResponseEntity<Resource> prepareDownloadHomeworkResource(String fileName) throws IOException;
+
+    List<S3ObjectSummary> listFiles();
+
+    void deleteHomeworkFile(UUID id);
+
+    void updateHomeworkFile(MultipartFile file, UUID id);
 }

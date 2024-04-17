@@ -115,6 +115,7 @@ public class S3Service {
     }
 
     public void deleteHomeworkFile(String fileName) {
+        System.out.println("Deleting file: " + fileName);
         s3Client.deleteObject(new DeleteObjectRequest(bucketName2, fileName));
     }
 

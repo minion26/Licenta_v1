@@ -13,23 +13,18 @@ import java.util.UUID;
 @Entity
 @Setter
 @Getter
-@Table(name = "student_homework")
-public class StudentHomework {
+@Table(name = "homework_files")
+public class HomeworkFiles {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id_student_homework")
-    private UUID idStudentHomework;
-
-    @ManyToOne
-    @JoinColumn(name = "id_student", nullable = false)
-    @JsonBackReference
-    private Students student;
+    @Column(name = "id_homework_files")
+    private UUID idHomeworkFiles;
 
     @ManyToOne
     @JoinColumn(name = "id_homework", nullable = false)
+    @JsonBackReference
     private Homework homework;
 
-    @ManyToOne
-    @JoinColumn(name = "id_homework_announcement", nullable = false)
-    private HomeworkAnnouncements homeworkAnnouncements;
+    @Column(name = "file_url")
+    private String fileUrl;
 }

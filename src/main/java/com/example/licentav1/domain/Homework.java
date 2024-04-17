@@ -29,9 +29,6 @@ public class Homework {
     @Column(name="duedate")
     private LocalDateTime dueDate;
 
-    @Column(name="file_url")
-    private String fileUrl;
-
     @ManyToOne
     @JoinColumn(name = "id_homework_announcement", nullable = false)
     private HomeworkAnnouncements homeworkAnnouncements;
@@ -39,4 +36,8 @@ public class Homework {
     @OneToMany(mappedBy = "homework")
     @JsonManagedReference
     private List<Feedback> feedbacks;
+
+    @OneToMany(mappedBy = "homework")
+    @JsonManagedReference
+    private List<HomeworkFiles> homeworkFiles;
 }
