@@ -12,4 +12,6 @@ public interface HomeworkAnnouncementsService {
     List<HomeworkAnnouncementsDTO> getHomeworkAnnouncements(UUID idLecture);
 
     void deleteHomeworkAnnouncement(UUID idHomeworkAnnouncement);
+
+    void updateHomeworkAnnouncement(UUID idHomeworkAnnouncement, HomeworkAnnouncementsDTO homeworkAnnouncementsDTO);
 }

@@ -41,4 +41,7 @@ public class HomeworkAnnouncements {
 
     @OneToMany(mappedBy = "homeworkAnnouncements")
     private List<Homework> homeworks;
+
+    @OneToMany(mappedBy = "homeworkAnnouncements")
+    private List<StudentHomework> studentHomeworks;
 }

@@ -36,5 +36,9 @@ public class HomeworkAnnouncementsController {
         homeworkAnnouncementService.deleteHomeworkAnnouncement(idHomeworkAnnouncement);
     }
 
-
+    @PatchMapping("/update/idHomeworkAnnouncement={idHomeworkAnnouncement}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateHomeworkAnnouncement(@PathVariable UUID idHomeworkAnnouncement, @RequestBody HomeworkAnnouncementsDTO homeworkAnnouncementsDTO) {
+        homeworkAnnouncementService.updateHomeworkAnnouncement(idHomeworkAnnouncement, homeworkAnnouncementsDTO);
+    }
 }

@@ -71,4 +71,28 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
     public void deleteHomeworkAnnouncement(UUID idHomeworkAnnouncement) {
         homeworkAnnouncementsRepository.deleteById(idHomeworkAnnouncement);
     }
+
+    @Override
+    public void updateHomeworkAnnouncement(UUID idHomeworkAnnouncement, HomeworkAnnouncementsDTO homeworkAnnouncementsDTO) {
+        //get the homework announcement
+        HomeworkAnnouncements homeworkAnnouncement = homeworkAnnouncementsRepository.findById(idHomeworkAnnouncement).orElseThrow(() -> new LectureNotFoundException("Homework announcement not found!"));
+
+        //update the homework announcement
+        if (homeworkAnnouncementsDTO.getTitle() != null) {
+            homeworkAnnouncement.setTitle(homeworkAnnouncementsDTO.getTitle());
+        }
+        if (homeworkAnnouncementsDTO.getDescription() != null) {
+            homeworkAnnouncement.setDescription(homeworkAnnouncementsDTO.getDescription());
+        }
+        if (homeworkAnnouncementsDTO.getDueDate() != null) {
+            homeworkAnnouncement.setDueDate(homeworkAnnouncementsDTO.getDueDate());
+        }
+        if (homeworkAnnouncementsDTO.getScore() != null) {
+            homeworkAnnouncement.setScore(homeworkAnnouncementsDTO.getScore());
+        }
+
+
+        //save the homework announcement
+        homeworkAnnouncementsRepository.save(homeworkAnnouncement);
+    }
 }
