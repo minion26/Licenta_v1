@@ -20,7 +20,7 @@ public class UsersMapper {
                 .password(users.getPassword())
                 .facultyEmail(users.getFacultyEmail())
                 .personalEmail(users.getPersonalEmail())
-                .roleId(users.getRoleId())
+                .roleId(users.getRoleId()) // roleId(Role.ADMIN.ordinal())
                 .build();
     }
 
@@ -32,7 +32,7 @@ public class UsersMapper {
                 .password(usersDto.getPassword())
                 .facultyEmail(usersDto.getFacultyEmail())
                 .personalEmail(usersDto.getPersonalEmail())
-                .roleId(usersDto.getRoleId())
+                .roleId(usersDto.getRoleId()) // roleId(Role.ADMIN.ordinal())
                 .build();
     }
 

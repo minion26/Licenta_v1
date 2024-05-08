@@ -208,7 +208,7 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         return reviewStudentAnswersDTOS;
 
     }
-
+//trebuie sa o fac endpoint ca sa o pot apela din front
     @Override
     public void setReviewed(UUID idStudentAnswerExam, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
         // get the student answer exam by id
