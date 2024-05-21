@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 //DAO
@@ -21,5 +22,5 @@ public interface UsersRepository extends JpaRepository<Users, UUID> {
     boolean existsByPersonalEmail(@Param("personalEmail") String personalEmail);
 
     @Query(value = "SELECT * FROM Users u WHERE u.faculty_email = :facultyEmail", nativeQuery = true)
-    Users findByFacultyEmail(@Param("facultyEmail") String facultyEmail);
+    Optional<Users> findByFacultyEmail(@Param("facultyEmail") String facultyEmail);
 }
