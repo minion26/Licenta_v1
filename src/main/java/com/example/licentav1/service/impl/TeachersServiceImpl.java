@@ -13,6 +13,7 @@ import com.example.licentav1.mapper.TeachersMapper;
 import com.example.licentav1.repository.TeachersRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.TeachersService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,10 +27,12 @@ public class TeachersServiceImpl implements TeachersService {
 
     private final TeachersRepository teachersRepository;
     private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public TeachersServiceImpl(TeachersRepository teachersRepository, UsersRepository usersRepository) {
+    public TeachersServiceImpl(TeachersRepository teachersRepository, UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
         this.teachersRepository = teachersRepository;
         this.usersRepository = usersRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -66,6 +69,7 @@ public class TeachersServiceImpl implements TeachersService {
 
         try{
             users = UsersMapper.fromTeacherCreationDTO(teachersCreationDTO);
+            users.setPassword(passwordEncoder.encode(teachersCreationDTO.getPassword()));
             usersRepository.save(users);
             idUser = users.getIdUsers();
         } catch (Exception e) {
@@ -125,7 +129,10 @@ public class TeachersServiceImpl implements TeachersService {
         String line;
         while ((line = br.readLine()) != null) {
             String[] data = line.split(",");
+            String password = UUID.randomUUID().toString().substring(0, 8); // trebuie trimisa si pe email cand se creeaza contul se trimite
+            // email-ul si parola
             Users users = UsersMapper.fromCsvDataTeacher(data);
+            users.setPassword(passwordEncoder.encode(password));
 
             if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
                 throw new UserAlreadyExistsException("Same email    already exists");

@@ -10,6 +10,7 @@ import com.example.licentav1.mapper.UsersMapper;
 import com.example.licentav1.repository.RolesRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.UsersService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Struct;
@@ -19,9 +20,11 @@ import java.util.UUID;
 public class UsersServiceImpl implements UsersService {
     private final UsersRepository usersRepository;
 
+    private final PasswordEncoder passwordEncoder;
 
-    public UsersServiceImpl(UsersRepository usersRepository) {
+    public UsersServiceImpl(UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
         this.usersRepository = usersRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -32,6 +35,7 @@ public class UsersServiceImpl implements UsersService {
 
     @Override
     public void createUsers(UsersDTO usersDTO) throws UserAlreadyExistsException {
+
         if (usersRepository.existsByFacultyEmail(usersDTO.getFacultyEmail())) {
             throw new UserAlreadyExistsException("User's faculty email already exists");
         }
@@ -40,7 +44,7 @@ public class UsersServiceImpl implements UsersService {
         }
 
         Users users = UsersMapper.fromDto(usersDTO);
-
+        users.setPassword(passwordEncoder.encode(usersDTO.getPassword()));
         usersRepository.save(users);
 
     }
@@ -53,7 +57,7 @@ public class UsersServiceImpl implements UsersService {
             users.setPersonalEmail(usersDTO.getPersonalEmail());
         }
         if (usersDTO.getPassword() != null) {
-            users.setPassword(usersDTO.getPassword());
+            users.setPassword(passwordEncoder.encode(usersDTO.getPassword()));
         }
         if (usersDTO.getRoleId() != null) {
             users.setRoleId(usersDTO.getRoleId());

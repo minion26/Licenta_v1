@@ -29,7 +29,7 @@ public class UsersMapper {
                 .idUsers(usersDto.getIdUsers())
                 .firstName(usersDto.getFirstName())
                 .lastName(usersDto.getLastName())
-                .password(usersDto.getPassword())
+//                .password(usersDto.getPassword())
                 .facultyEmail(usersDto.getFacultyEmail())
                 .personalEmail(usersDto.getPersonalEmail())
                 .roleId(usersDto.getRoleId()) // roleId(Role.ADMIN.ordinal())
@@ -42,7 +42,7 @@ public class UsersMapper {
                 .lastName(studentsCreationDTO.getLastName())
                 .facultyEmail(studentsCreationDTO.getFacultyEmail())
                 .personalEmail(studentsCreationDTO.getPersonalEmail())
-                .password(studentsCreationDTO.getPassword())
+//                .password(studentsCreationDTO.getPassword())
                 .roleId(Role.STUDENT.ordinal())
                 .build();
     }
@@ -64,31 +64,31 @@ public class UsersMapper {
                 .lastName(teachersCreationDTO.getLastName())
                 .facultyEmail(teachersCreationDTO.getFacultyEmail())
                 .personalEmail(teachersCreationDTO.getPersonalEmail())
-                .password(teachersCreationDTO.getPassword())
+//                .password(teachersCreationDTO.getPassword())
                 .roleId(Role.TEACHER.ordinal())
                 .build();
     }
 
     public static Users fromCsvDataStudent(String[] data){
-        String password = UUID.randomUUID().toString().substring(0, 8);
+
         return Users.builder()
                 .firstName(data[0])
                 .lastName(data[1])
                 .facultyEmail(data[2])
                 .personalEmail(data[3])
-                .password(password)
+//                .password(password)
                 .roleId(Role.STUDENT.ordinal())
                 .build();
     }
 
     public static Users fromCsvDataTeacher(String[] data){
-        String password = UUID.randomUUID().toString().substring(0, 8);
+
         return Users.builder()
                 .firstName(data[0])
                 .lastName(data[1])
                 .facultyEmail(data[2])
                 .personalEmail(data[3])
-                .password(password)
+//                .password(password)
                 .roleId(Role.TEACHER.ordinal())
                 .build();
     }

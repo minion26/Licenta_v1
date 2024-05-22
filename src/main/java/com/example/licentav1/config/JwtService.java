@@ -1,5 +1,8 @@
 package com.example.licentav1.config;
 
+import com.example.licentav1.domain.Users;
+import com.example.licentav1.repository.StudentsRepository;
+import com.example.licentav1.repository.UsersRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,16 +12,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
+    private final UsersRepository usersRepository;
+
+    private final StudentsRepository studentsRepository;
+
+
     private static final String SECRET_KEY = "6424ca777123aa812b726c5051585d747941a44d2e7787b145cee7c6b97d826f";
+
+    public JwtService(UsersRepository usersRepository, StudentsRepository studentsRepository) {
+        this.usersRepository = usersRepository;
+        this.studentsRepository = studentsRepository;
+    }
 
 
     public String extractUsername(String token) {
@@ -34,9 +44,25 @@ public class JwtService {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(
-            Map<String, Object> extraClaims, //to pass authorities, other info
-            UserDetails userDetails) {
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        Users users = usersRepository.findByFacultyEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
+        UUID userId = users.getIdUsers();
+        extraClaims.put("userId", userId);
+
+        Integer roleId = users.getRoleId();
+        extraClaims.put("roleId", roleId);
+
+        if (roleId == 3){
+            //STUDENT
+            var student = studentsRepository.findById(userId).orElseThrow(() -> new RuntimeException("Student not found"));
+            Integer yearOfStudy = student.getYearOfStudy();
+            extraClaims.put("yearOfStudy", yearOfStudy);
+
+            String group = student.getGroupOfStudy();
+            extraClaims.put("group", group);
+
+        }
+
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())

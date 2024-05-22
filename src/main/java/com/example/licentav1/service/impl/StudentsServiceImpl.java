@@ -14,6 +14,7 @@ import com.example.licentav1.mapper.StudentsMapper;
 import com.example.licentav1.repository.StudentsRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.StudentsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,12 +28,13 @@ import java.util.UUID;
 public class StudentsServiceImpl implements StudentsService {
     private final StudentsRepository studentsRepository;
     private final UsersRepository usersRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
-
-    public StudentsServiceImpl(StudentsRepository studentsRepository, UsersRepository usersRepository) {
+    public StudentsServiceImpl(StudentsRepository studentsRepository, UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
         this.studentsRepository = studentsRepository;
         this.usersRepository = usersRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -70,6 +72,7 @@ public class StudentsServiceImpl implements StudentsService {
 
         try{
             users = UsersMapper.fromStudentCreationDTO(studentsCreationDTO);
+            users.setPassword(passwordEncoder.encode(studentsCreationDTO.getPassword()));
             if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
                 throw new StudentAlreadyExistsException("User already exists");
             }
@@ -147,7 +150,11 @@ public class StudentsServiceImpl implements StudentsService {
         String line;
         while ((line = br.readLine()) != null) {
             String[] data = line.split(",");
+            String password = UUID.randomUUID().toString().substring(0, 8); // trebuie trimisa si pe email cand se creeaza contul se trimite
+            //si pe email parola asta
+
             Users users = UsersMapper.fromCsvDataStudent(data);
+            users.setPassword(passwordEncoder.encode(password)); // encode the password
 
             if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
                 throw new UserAlreadyExistsException("User already exists");
