@@ -17,7 +17,7 @@ public class UsersMapper {
                 .idUsers(users.getIdUsers())
                 .firstName(users.getFirstName())
                 .lastName(users.getLastName())
-                .password(users.getPassword())
+//                .password(users.getPassword())
                 .facultyEmail(users.getFacultyEmail())
                 .personalEmail(users.getPersonalEmail())
                 .roleId(users.getRoleId()) // roleId(Role.ADMIN.ordinal())

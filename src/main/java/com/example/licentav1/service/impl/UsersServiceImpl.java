@@ -79,5 +79,11 @@ public class UsersServiceImpl implements UsersService {
 
     }
 
+    @Override
+    public UsersDTO getUserByEmail(String email) {
+        Users users = usersRepository.findByFacultyEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+        return UsersMapper.toDto(users);
+    }
+
 
 }

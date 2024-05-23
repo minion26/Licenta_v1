@@ -35,6 +35,12 @@ public class UsersController {
         return rolesService.getRoleById(id);
     }
 
+    @GetMapping("/email/{email}")
+    @ResponseStatus(HttpStatus.OK)
+    public UsersDTO getUserByEmail(@PathVariable(value="email") String email) throws UserNotFoundException {
+        return usersService.getUserByEmail(email);
+    }
+
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public void createUsers(@RequestBody UsersDTO usersDTO) throws UserAlreadyExistsException {
