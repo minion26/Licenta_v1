@@ -31,6 +31,12 @@ public class StudentsController {
         return studentsService.getStudents();
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public StudentsDTO getStudentsByIdUsers(@PathVariable(value="id") UUID id) {
+        return studentsService.getStudentsByIdUsers(id);
+    }
+
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public void createStudent(@RequestBody @Valid StudentsCreationDTO studentsCreationDTO) throws StudentAlreadyExistsException, UserAlreadyExistsException {

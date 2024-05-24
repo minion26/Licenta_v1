@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -56,6 +57,14 @@ public class StudentsServiceImpl implements StudentsService {
     }
 
     @Override
+    public StudentsDTO getStudentsByIdUsers(UUID id) {
+        Students students = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+        Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        return StudentsMapper.toDTO(users, students);
+    }
+
+    @Override
     public void createStudent(StudentsCreationDTO studentsCreationDTO) throws StudentAlreadyExistsException, UserAlreadyExistsException {
         if (usersRepository.existsByFacultyEmail(studentsCreationDTO.getFacultyEmail())) {
             throw new UserAlreadyExistsException("User's faculty email already exists");
@@ -72,7 +81,9 @@ public class StudentsServiceImpl implements StudentsService {
 
         try{
             users = UsersMapper.fromStudentCreationDTO(studentsCreationDTO);
-            users.setPassword(passwordEncoder.encode(studentsCreationDTO.getPassword()));
+            String password = UUID.randomUUID().toString().substring(0, 8);
+            System.out.println("Password: " + password);
+            users.setPassword(passwordEncoder.encode(password));
             if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
                 throw new StudentAlreadyExistsException("User already exists");
             }
@@ -82,6 +93,7 @@ public class StudentsServiceImpl implements StudentsService {
             System.out.printf("Error: %s", e.getMessage());
         }
 
+        LocalDateTime enrollmentDate = LocalDateTime.now();
         try{
 
             Students students = Students.builder()
@@ -90,7 +102,7 @@ public class StudentsServiceImpl implements StudentsService {
                             .yearOfStudy(studentsCreationDTO.getYearOfStudy())
                             .semester(studentsCreationDTO.getSemester())
                             .groupOfStudy(studentsCreationDTO.getGroupOfStudy())
-                            .enrollmentDate(studentsCreationDTO.getEnrollmentDate())
+                            .enrollmentDate(enrollmentDate)
                             .build();
 
             studentsRepository.save(students);
@@ -169,4 +181,6 @@ public class StudentsServiceImpl implements StudentsService {
             studentsRepository.save(students);
         }
     }
+
+
 }

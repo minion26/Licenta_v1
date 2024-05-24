@@ -18,4 +18,6 @@ public interface StudentsService {
     void deleteStudent(UUID id);
 
     void uploadStudents(MultipartFile file) throws IOException;
+
+    StudentsDTO getStudentsByIdUsers(UUID id);
 }

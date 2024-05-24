@@ -35,9 +35,9 @@ public class StudentsCreationDTO {
     @Size(min=1, max=50, message = "Personal email must be between 1 and 50 characters")
     private String personalEmail;
 
-    @NotNull(message = "Password is required")
-    @Size(min=1, max=50, message = "Password must be between 1 and 50 characters")
-    private String password;
+//    @NotNull(message = "Password is required")
+//    @Size(min=1, max=50, message = "Password must be between 1 and 50 characters")
+//    private String password;
 
     @NotNull(message = "Nr matriculation is required")
     @Size(min=1, max=50, message = "Nr matriculation must be between 1 and 50 characters")
@@ -57,6 +57,6 @@ public class StudentsCreationDTO {
     @Size(min=1, max=50, message = "Group of study must be between 1 and 50 characters")
     private String groupOfStudy;
 
-    @NotNull(message = "Enrollment date is required")
-    private LocalDateTime enrollmentDate;
+//    @NotNull(message = "Enrollment date is required")
+//    private LocalDateTime enrollmentDate;
 }
