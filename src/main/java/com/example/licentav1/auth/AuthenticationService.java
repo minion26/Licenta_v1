@@ -3,11 +3,14 @@ package com.example.licentav1.auth;
 import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.Users;
 import com.example.licentav1.repository.UsersRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseCookie;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletResponse response) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getFacultyEmail(),
@@ -34,6 +37,18 @@ public class AuthenticationService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         var jwtToken= jwtService.generateToken(user);
+
+        // added http-only
+        ResponseCookie cookie = ResponseCookie.from("accessToken", jwtToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(3600) // 1 hour
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        // end  added http-only
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
