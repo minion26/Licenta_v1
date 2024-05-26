@@ -69,7 +69,11 @@ public class TeachersServiceImpl implements TeachersService {
 
         try{
             users = UsersMapper.fromTeacherCreationDTO(teachersCreationDTO);
-            users.setPassword(passwordEncoder.encode(teachersCreationDTO.getPassword()));
+
+            String password = UUID.randomUUID().toString().substring(0, 8);
+            System.out.println(password);
+
+            users.setPassword(passwordEncoder.encode(password));
             usersRepository.save(users);
             idUser = users.getIdUsers();
         } catch (Exception e) {

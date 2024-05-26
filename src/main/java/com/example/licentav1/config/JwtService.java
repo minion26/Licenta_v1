@@ -8,12 +8,20 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 
 @Service
 public class JwtService {
@@ -40,11 +48,11 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(UserDetails userDetails, HttpServletResponse response){
+        return generateToken(new HashMap<>(), userDetails, response);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails,  HttpServletResponse response) {
         Users users = usersRepository.findByFacultyEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
         UUID userId = users.getIdUsers();
         extraClaims.put("userId", userId);
@@ -63,13 +71,37 @@ public class JwtService {
 
         }
 
-        return Jwts.builder()
+//        long nowMillis = System.currentTimeMillis();
+//        long expMillis = nowMillis + TimeUnit.DAYS.toMillis(1);
+//        Date exp = new Date(expMillis);
+
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
+        ZonedDateTime exp = now.plusDays(1);
+
+        System.out.println("Token expires at: " + exp);
+
+        var jwtToken = Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date(System.currentTimeMillis())) //to calculate if the token is expired
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 24)) //1 day
+                .setIssuedAt(Date.from(now.toInstant())) //to calculate if the token is expired
+                .setExpiration(Date.from(exp.toInstant())) //1 day
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
+
+        long maxAge = Duration.between(now, exp).getSeconds();
+
+        ResponseCookie cookie = ResponseCookie.from("accessToken", jwtToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(maxAge) // 1 day
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+
+
+        return jwtToken;
     }
 
     public Boolean isTokenValid(String token, UserDetails userDetails) {

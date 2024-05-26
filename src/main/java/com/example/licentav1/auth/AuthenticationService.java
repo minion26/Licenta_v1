@@ -36,17 +36,18 @@ public class AuthenticationService {
         var user = usersRepository.findByFacultyEmail(request.getFacultyEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        var jwtToken= jwtService.generateToken(user);
+        var jwtToken= jwtService.generateToken(user, response);
+
 
         // added http-only
-        ResponseCookie cookie = ResponseCookie.from("accessToken", jwtToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .path("/")
-                .maxAge(3600) // 1 hour
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//        ResponseCookie cookie = ResponseCookie.from("accessToken", jwtToken)
+//                .httpOnly(true)
+//                .secure(true)
+//                .sameSite("None")
+//                .path("/")
+//                .maxAge(86400) // 1 day
+//                .build();
+//        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         // end  added http-only
 
         return AuthenticationResponse.builder()
@@ -54,7 +55,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    public AuthenticationResponse register(RegisterRequest request) {
+    public AuthenticationResponse register(RegisterRequest request, HttpServletResponse response) {
         var user = Users.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -64,7 +65,7 @@ public class AuthenticationService {
                 .roleId(1)
                 .build();
         usersRepository.save(user);
-        var jwtToken= jwtService.generateToken(user);
+        var jwtToken= jwtService.generateToken(user, response);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
