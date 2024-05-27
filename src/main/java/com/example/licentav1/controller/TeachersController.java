@@ -32,6 +32,12 @@ public class TeachersController {
         return teachersService.getTeachers();
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public TeachersDTO getTeacher(@PathVariable(value="id") UUID id) throws UserNotFoundException, TeacherNotFoundException {
+        return teachersService.getTeacher(id);
+    }
+
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public void createTeacher(@RequestBody @Valid TeachersCreationDTO teachersCreationDTO) throws UserAlreadyExistsException, TeacherAlreadyExistsException {

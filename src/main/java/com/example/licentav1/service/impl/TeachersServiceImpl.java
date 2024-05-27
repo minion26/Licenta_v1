@@ -52,6 +52,16 @@ public class TeachersServiceImpl implements TeachersService {
         return teachersDTO;
     }
 
+
+    @Override
+    public TeachersDTO getTeacher(UUID id) {
+        Teachers teahcers = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+        Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
+        return TeachersMapper.toDTO(users, teahcers);
+    }
+
+
+
     @Override
     public void createTeacher(TeachersCreationDTO teachersCreationDTO) throws UserAlreadyExistsException, TeacherAlreadyExistsException {
         if (usersRepository.existsByFacultyEmail(teachersCreationDTO.getFacultyEmail())) {
@@ -153,4 +163,6 @@ public class TeachersServiceImpl implements TeachersService {
             teachersRepository.save(teachers);
         }
     }
+
+
 }
