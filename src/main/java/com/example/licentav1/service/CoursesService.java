@@ -19,4 +19,6 @@ public interface CoursesService {
     void deleteCourse(UUID id);
 
     void updateCourse(UUID id, CoursesDTO coursesDTO);
+
+    CoursesDTO getCourseById(UUID id);
 }

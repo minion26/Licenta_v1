@@ -42,6 +42,12 @@ public class CoursesServiceImpl implements CoursesService {
     }
 
     @Override
+    public CoursesDTO getCourseById(UUID id) {
+        Courses courses = coursesRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        return CoursesMapper.toDTO(courses);
+    }
+
+    @Override
     public void uploadCourses(MultipartFile file) throws IOException {
         BufferedReader br = new BufferedReader(new java.io.InputStreamReader(file.getInputStream()));
         String line;

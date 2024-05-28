@@ -27,6 +27,13 @@ public class DidacticController {
         return didacticService.getAllDidactic();
     }
 
+    @GetMapping("/{idCourse}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<DidacticDTO> getDidacticByCourse(@PathVariable UUID idCourse) {
+        return didacticService.getDidacticByCourse(idCourse);
+    }
+
+
     @PostMapping("/create/course={courseId}&teacher={teacherId}")
     @ResponseStatus(HttpStatus.CREATED)
     public void createDidactic(@PathVariable UUID courseId, @PathVariable UUID teacherId) {

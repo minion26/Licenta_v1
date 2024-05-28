@@ -3,6 +3,7 @@ package com.example.licentav1.service.impl;
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.advice.exceptions.StudentCourseRelationNotFoundException;
 import com.example.licentav1.advice.exceptions.StudentNotFoundException;
+import com.example.licentav1.advice.exceptions.UserNotFoundException;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Students;
 import com.example.licentav1.domain.StudentsFollowCourses;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -100,6 +102,8 @@ public class StudentsFollowCoursesServiceImpl implements StudentsFollowCoursesSe
                 }).collect(Collectors.toList());
     }
 
+
+
     @Override
     public void deleteStudentFollowCourse(String id) throws StudentCourseRelationNotFoundException{
         StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findById(UUID.fromString(id)).orElseThrow(() -> new StudentCourseRelationNotFoundException("Student-Course relation not found"));
@@ -131,5 +135,37 @@ public class StudentsFollowCoursesServiceImpl implements StudentsFollowCoursesSe
             System.out.printf("Error: %s", e.getMessage());
         }
 
+    }
+
+    @Override
+    public List<StudentsFollowCoursesDTO> getStudentFollowCourse(String courseName) {
+        Courses courses = coursesRepository.findByName(courseName).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        UUID courseId = courses.getIdCourses();
+//        System.out.println("id: " + courseId);
+        return studentsFollowCoursesRepository.findAllByCourse(courseId).orElse(Collections.emptyList()).stream()
+                .map(std -> {
+                    StudentsFollowCoursesDTO studentsFollowCoursesDTO = new StudentsFollowCoursesDTO();
+
+                    studentsFollowCoursesDTO.setIdStudentFollowCourse(std.getIdStudentsFollowCourses());
+
+                    Students student = studentsRepository.findById(std.getStudent().getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+                    Courses course = coursesRepository.findById(std.getCourse().getIdCourses()).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+                    if (student != null) {
+                        Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+                        if (user != null) {
+                            studentsFollowCoursesDTO.setStudentName(user.getFirstName() + " " + user.getLastName());
+                        }
+                    }
+
+                    if (course != null) {
+                        studentsFollowCoursesDTO.setCourseName(course.getName());
+                    }
+
+//                    System.out.println(studentsFollowCoursesDTO.getStudentName() + " " + studentsFollowCoursesDTO.getCourseName());
+                    return studentsFollowCoursesDTO;
+
+                }).collect(Collectors.toList());
     }
 }

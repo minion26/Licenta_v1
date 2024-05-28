@@ -34,6 +34,11 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public Iterable<UsersDTO> getAdmins() {
+        return usersRepository.findAll().stream().filter(u -> u.getRoleId() == 1).map(UsersMapper::toDto).toList();
+    }
+
+    @Override
     public void createUsers(UsersDTO usersDTO) throws UserAlreadyExistsException {
 
         if (usersRepository.existsByFacultyEmail(usersDTO.getFacultyEmail())) {
@@ -44,7 +49,10 @@ public class UsersServiceImpl implements UsersService {
         }
 
         Users users = UsersMapper.fromDto(usersDTO);
-        users.setPassword(passwordEncoder.encode(usersDTO.getPassword()));
+        String password = UUID.randomUUID().toString().substring(0, 8);
+        System.out.println(password);
+
+        users.setPassword(passwordEncoder.encode(password));
         usersRepository.save(users);
 
     }

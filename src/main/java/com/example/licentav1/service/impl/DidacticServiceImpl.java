@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -124,6 +125,34 @@ public class DidacticServiceImpl implements DidacticService {
                 }).collect(Collectors.toList());
 
     }
+
+    @Override
+    public List<DidacticDTO> getDidacticByCourse(UUID idCourse) {
+        return didacticRepository.findAllByIdCourses(idCourse).orElse(Collections.emptyList()).stream()
+                .map(didactic -> {
+                    DidacticDTO dto = new DidacticDTO();
+
+                    dto.setIdDidactic(didactic.getIdDidactic());
+
+                    Teachers teacher = teacherRepository.findById(didactic.getTeachers().getIdUsers()).orElse(null);
+                    Courses course = coursesRepository.findById(didactic.getCourses().getIdCourses()).orElse(null);
+
+                    if (teacher != null) {
+                        Users user = usersRepository.findById(teacher.getIdUsers()).orElse(null);
+
+                        if (user != null) {
+                            dto.setTeacherName(user.getFirstName() + " " + user.getLastName());
+                        }
+                    }
+
+                    if (course != null) {
+                        dto.setCourseName(course.getName());
+                    }
+                    return dto;
+                }).collect(Collectors.toList());
+
+    }
+
 
     @Override
     public void deleteDidactic(UUID id) throws DidacticRelationNotFoundException {

@@ -16,4 +16,6 @@ public interface UsersService {
     void deleteUsers(UUID id);
 
     UsersDTO getUserByEmail(String email);
+
+    Iterable<UsersDTO> getAdmins();
 }

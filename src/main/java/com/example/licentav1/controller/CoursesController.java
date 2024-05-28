@@ -35,6 +35,12 @@ public class CoursesController {
         return coursesService.getCourses();
     }
 
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public CoursesDTO getCourseById(@PathVariable("id") UUID id) throws CourseNotFoundException {
+        return coursesService.getCourseById(id);
+    }
+
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public void createCourse( @RequestBody @Valid CoursesCreationDTO coursesCreationDTO) throws CourseAlreadyExistsException {

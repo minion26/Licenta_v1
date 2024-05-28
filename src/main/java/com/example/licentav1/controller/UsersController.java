@@ -41,6 +41,12 @@ public class UsersController {
         return usersService.getUserByEmail(email);
     }
 
+    @GetMapping("/admins")
+    @ResponseStatus(HttpStatus.OK)
+    public Iterable<UsersDTO> getAdmins() {
+        return usersService.getAdmins();
+    }
+
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public void createUsers(@RequestBody UsersDTO usersDTO) throws UserAlreadyExistsException {

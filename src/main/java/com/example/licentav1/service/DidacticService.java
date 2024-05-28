@@ -17,4 +17,6 @@ public interface DidacticService {
     void deleteDidactic(UUID id);
 
     void updateDidactic(UUID id, DidacticDTO didacticDTO);
+
+    List<DidacticDTO> getDidacticByCourse(UUID idCourse);
 }
