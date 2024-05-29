@@ -61,6 +61,18 @@ public class UsersServiceImpl implements UsersService {
     public void updateUsers(UUID id, UsersDTO usersDTO) throws UserNotFoundException {
         Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        if (usersDTO.getFirstName() != null) {
+            users.setFirstName(usersDTO.getFirstName());
+        }
+        if (usersDTO.getLastName() != null) {
+            users.setLastName(usersDTO.getLastName());
+        }
+        if (usersDTO.getFacultyEmail() != null) {
+            users.setFacultyEmail(usersDTO.getFacultyEmail());
+        }
+        if(usersDTO.getRoleId() != null) {
+            users.setRoleId(usersDTO.getRoleId());
+        }
         if (usersDTO.getPersonalEmail() != null) {
             users.setPersonalEmail(usersDTO.getPersonalEmail());
         }
