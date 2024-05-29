@@ -21,4 +21,6 @@ public interface CoursesService {
     void updateCourse(UUID id, CoursesDTO coursesDTO);
 
     CoursesDTO getCourseById(UUID id);
+
+    List<CoursesDTO> getCoursesByTeacher(UUID idTeacher);
 }

@@ -2,11 +2,16 @@ package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.domain.Courses;
+import com.example.licentav1.domain.Didactic;
+import com.example.licentav1.domain.Teachers;
 import com.example.licentav1.dto.CoursesCreationDTO;
 import com.example.licentav1.dto.CoursesDTO;
 import com.example.licentav1.mapper.CoursesMapper;
 import com.example.licentav1.repository.CoursesRepository;
+import com.example.licentav1.repository.DidacticRepository;
+import com.example.licentav1.repository.TeachersRepository;
 import com.example.licentav1.service.CoursesService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,9 +25,13 @@ import java.util.UUID;
 @Service
 public class CoursesServiceImpl implements CoursesService {
     private final CoursesRepository coursesRepository;
+    private final DidacticRepository didacticRepository;
+    private final TeachersRepository teacherRepository;
 
-    public CoursesServiceImpl(CoursesRepository coursesRepository) {
+    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository) {
         this.coursesRepository = coursesRepository;
+        this.didacticRepository = didacticRepository;
+        this.teacherRepository = teacherRepository;
     }
 
 
@@ -45,6 +54,14 @@ public class CoursesServiceImpl implements CoursesService {
     public CoursesDTO getCourseById(UUID id) {
         Courses courses = coursesRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         return CoursesMapper.toDTO(courses);
+    }
+
+    @Override
+    public List<CoursesDTO> getCoursesByTeacher(UUID idTeacher) {
+        Teachers teacher = teacherRepository.findById(idTeacher).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+        List<Didactic> didacticList = didacticRepository.findAllByIdTeacher(idTeacher).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        return didacticList.stream().map(Didactic::getCourses).map(CoursesMapper::toDTO).toList();
     }
 
     @Override
