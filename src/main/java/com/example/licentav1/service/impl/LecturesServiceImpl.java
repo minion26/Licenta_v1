@@ -116,5 +116,17 @@ public class LecturesServiceImpl implements LecturesService {
         return LecturesMapper.toDTO(lecture, course);
     }
 
+    @Override
+    public List<LecturesDTO> getLecturesByCourse(UUID idCourses) {
+        Courses course = coursesRepository.findById(idCourses).orElseThrow(()-> new CourseNotFoundException("Course not found"));
+        List<Lectures> lectures = lecturesRepository.findByIdCourses(idCourses);
+
+        List<LecturesDTO> lecturesDTO = new ArrayList<>();
+        for (Lectures lecture : lectures) {
+            lecturesDTO.add(LecturesMapper.toDTO(lecture, course));
+        }
+        return lecturesDTO;
+    }
+
 
 }

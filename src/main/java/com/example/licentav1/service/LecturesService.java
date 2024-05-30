@@ -16,4 +16,6 @@ public interface LecturesService {
     void updateLecture(LecturesDTO lecturesDTO, UUID idLecture);
 
     LecturesDTO getLecture(UUID idLecture);
+
+    List<LecturesDTO> getLecturesByCourse(UUID idCourses);
 }

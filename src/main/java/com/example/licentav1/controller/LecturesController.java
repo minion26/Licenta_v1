@@ -26,6 +26,12 @@ public class LecturesController {
         return lecturesService.getLectures();
     }
 
+    @GetMapping("/idCourses={idCourses}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<LecturesDTO> getLecturesByCourse(@PathVariable("idCourses") UUID idCourses) {
+        return lecturesService.getLecturesByCourse(idCourses);
+    }
+
     @GetMapping("/{idLecture}")
     @ResponseStatus(HttpStatus.OK)
     public LecturesDTO getLecture(@PathVariable("idLecture") UUID idLecture){

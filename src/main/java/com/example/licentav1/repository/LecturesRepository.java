@@ -12,4 +12,7 @@ import java.util.UUID;
 public interface LecturesRepository extends JpaRepository<Lectures, UUID> {
     @Query(value = "SELECT * FROM lectures", nativeQuery = true)
     List<Lectures> getLectures();
+
+    @Query(value = "SELECT * FROM lectures WHERE id_course = :idCourses", nativeQuery = true)
+    List<Lectures> findByIdCourses(UUID idCourses);
 }
