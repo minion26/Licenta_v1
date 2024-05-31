@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,4 +120,7 @@ public class S3Service {
         s3Client.deleteObject(new DeleteObjectRequest(bucketName2, fileName));
     }
 
+    public S3Object getObject(String key) {
+        return s3Client.getObject(new GetObjectRequest(bucketName, key));
+    }
 }

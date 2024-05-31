@@ -1,17 +1,12 @@
 package com.example.licentav1.service.impl;
 
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.amazonaws.services.s3.transfer.Upload;
+import com.amazonaws.services.s3.model.*;
 import com.example.licentav1.AWS.S3Service;
 import com.example.licentav1.advice.exceptions.FileException;
 import com.example.licentav1.advice.exceptions.StorageException;
 import com.example.licentav1.domain.Lectures;
 import com.example.licentav1.domain.Materials;
+import com.example.licentav1.dto.MaterialsDTO;
 import com.example.licentav1.repository.LecturesRepository;
 import com.example.licentav1.repository.MaterialsRepository;
 import com.example.licentav1.service.MaterialsService;
@@ -21,9 +16,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +37,7 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
-    public void uploadFile(List<MultipartFile> file, UUID id) throws IOException {
+    public void uploadFile(List<MultipartFile> file, UUID id, MaterialsDTO materialsDTO) throws IOException {
         for (MultipartFile f : file){
             if (f.isEmpty()) {
                 throw new FileException("File is empty");
@@ -63,6 +59,7 @@ public class MaterialsServiceImpl implements MaterialsService {
                 Materials material = new Materials();
                 material.setName(f.getOriginalFilename());
                 material.setFileUrl(fileUrl);
+                material.setMaterialType(materialsDTO.getMaterialType());
 
                 Lectures lecture = lecturesRepository.findById(id).orElse(null);
                 if (lecture != null) {
@@ -186,7 +183,7 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
-    public void updateFile(MultipartFile file, UUID id) throws IOException, InterruptedException {
+    public void updateFile(MultipartFile file, UUID id, MaterialsDTO materialsDTO) throws IOException, InterruptedException {
         Materials material = materialsRepository.findById(id).orElseThrow(() -> new RuntimeException("Material not found"));
         if (material != null) {
             s3Service.deleteFile(material.getName());
@@ -195,10 +192,95 @@ public class MaterialsServiceImpl implements MaterialsService {
             String fileUrl = s3Service.uploadFile(file);
             material.setName(file.getOriginalFilename());
             material.setFileUrl(fileUrl);
+            material.setMaterialType(materialsDTO.getMaterialType());
             materialsRepository.save(material);
         }else{
             throw new RuntimeException("Material not found");
         }
+    }
+
+    @Override
+    public List<String> getMaterialTypeById(UUID id) {
+        List<String> types = new ArrayList<>();
+        Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+        if (lectures != null) {
+            List<Materials> materials = materialsRepository.findByIdLectures(id).orElseThrow(() -> new RuntimeException("Materials not found"));
+            for(Materials material : materials){
+                types.add(material.getMaterialType());
+            }
+        }
+        return types;
+    }
+
+    @Override
+    public List<S3ObjectSummary> listFilesByType(UUID id, String type) {
+        List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
+        Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+        if (lectures != null) {
+            List<Materials> materials = materialsRepository.findByIdLectures(id).orElseThrow(() -> new RuntimeException("Materials not found"));
+            for(Materials material : materials){
+                if (material.getMaterialType().equals(type)){
+                    S3ObjectSummary s3ObjectSummary = new S3ObjectSummary();
+                    s3ObjectSummary.setKey(material.getName());
+                    s3ObjectSummary.setBucketName("licenta-bucket");
+                    s3ObjectSummaries.add(s3ObjectSummary);
+                }
+            }
+        }
+        return s3ObjectSummaries;
+    }
+
+    @Override
+    public ResponseEntity<InputStreamResource> getFile(String key) {
+        S3Object s3Object = s3Service.getObject(key);
+        InputStreamResource resource = new InputStreamResource(s3Object.getObjectContent());
+        // Extract file extension
+        String fileExtension = key.substring(key.lastIndexOf(".") + 1);
+
+        // Set content type based on file extension
+        String contentType = "application/octet-stream"; // default content type
+        if ("pdf".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/pdf";
+        } else if ("png".equalsIgnoreCase(fileExtension)) {
+            contentType = "image/png";
+        } else if ("jpg".equalsIgnoreCase(fileExtension) || "jpeg".equalsIgnoreCase(fileExtension)) {
+            contentType = "image/jpeg";
+        } else if ("doc".equalsIgnoreCase(fileExtension) || "docx".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/msword";
+        } else if ("xls".equalsIgnoreCase(fileExtension) || "xlsx".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/vnd.ms-excel";
+        } else if ("ppt".equalsIgnoreCase(fileExtension) || "pptx".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/vnd.ms-powerpoint";
+        } else if ("zip".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/zip";
+        } else if ("txt".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/plain";
+        } else if ("py".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-python";
+        } else if ("java".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-java-source";
+        } else if ("cpp".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-c++src";
+        } else if ("c".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-csrc";
+        } else if ("html".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/html";
+        } else if ("css".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/css";
+        } else if ("js".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/javascript";
+        } else if ("csv".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/csv";
+        } else if ("xml".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/xml";
+        } else if ("json".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/json";
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key)
+                .body(resource);
     }
 
 

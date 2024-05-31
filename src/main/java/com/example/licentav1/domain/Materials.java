@@ -1,5 +1,6 @@
 package com.example.licentav1.domain;
 
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,9 @@ public class Materials {
     @ManyToOne
     @JoinColumn(name = "id_lecture", nullable = false)
     private Lectures lectures;
+
+    @Column(name="material_type")
+    private String materialType;
 
 
 }

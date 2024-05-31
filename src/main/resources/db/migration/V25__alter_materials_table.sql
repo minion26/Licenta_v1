@@ -1,0 +1,1 @@
+ALTER TABLE materials ADD COLUMN material_type VARCHAR(255);
