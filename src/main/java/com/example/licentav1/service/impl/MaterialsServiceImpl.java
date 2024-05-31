@@ -7,6 +7,7 @@ import com.example.licentav1.advice.exceptions.StorageException;
 import com.example.licentav1.domain.Lectures;
 import com.example.licentav1.domain.Materials;
 import com.example.licentav1.dto.MaterialsDTO;
+import com.example.licentav1.dto.MaterialsInfoDTO;
 import com.example.licentav1.repository.LecturesRepository;
 import com.example.licentav1.repository.MaterialsRepository;
 import com.example.licentav1.service.MaterialsService;
@@ -281,6 +282,24 @@ public class MaterialsServiceImpl implements MaterialsService {
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key)
                 .body(resource);
+    }
+
+    @Override
+    public List<MaterialsInfoDTO> getMaterialsByIdLectures(UUID id) {
+        // Verificați dacă cursul există
+        Lectures lecture = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+
+        List<MaterialsInfoDTO> materialsInfoDTOS = new ArrayList<>();
+        if (lecture != null) {
+            List<Materials> materials = materialsRepository.findByIdLectures(id).orElseThrow(() -> new RuntimeException("Materials not found"));
+            for (Materials material : materials) {
+                MaterialsInfoDTO materialsInfoDTO = new MaterialsInfoDTO();
+                materialsInfoDTO.setIdMaterial(material.getIdMaterial());
+                materialsInfoDTO.setName(material.getName());
+                materialsInfoDTOS.add(materialsInfoDTO);
+            }
+        }
+        return materialsInfoDTOS;
     }
 
 

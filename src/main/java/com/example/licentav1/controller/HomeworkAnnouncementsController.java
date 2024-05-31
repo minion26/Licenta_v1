@@ -30,6 +30,12 @@ public class HomeworkAnnouncementsController {
         return homeworkAnnouncementService.getHomeworkAnnouncements(idLecture);
     }
 
+    @GetMapping("/idHomeworkAnnouncement={idHomeworkAnnouncement}")
+    @ResponseStatus(HttpStatus.OK)
+    public HomeworkAnnouncementsDTO getHomeworkAnnouncement(@PathVariable UUID idHomeworkAnnouncement) {
+        return homeworkAnnouncementService.getHomeworkAnnouncement(idHomeworkAnnouncement);
+    }
+
     @DeleteMapping("/delete/idHomeworkAnnouncement={idHomeworkAnnouncement}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteHomeworkAnnouncement(@PathVariable UUID idHomeworkAnnouncement) {

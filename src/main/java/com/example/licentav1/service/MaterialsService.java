@@ -8,7 +8,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.example.licentav1.dto.MaterialsInfoDTO;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
@@ -31,4 +31,6 @@ public interface MaterialsService {
 
 
     ResponseEntity<InputStreamResource> getFile(String key);
+
+    List<MaterialsInfoDTO> getMaterialsByIdLectures(UUID id);
 }

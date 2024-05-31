@@ -48,6 +48,10 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
+    public UUID extractUserId(Users user) {
+        return user.getIdUsers();
+    }
+
     public String generateToken(UserDetails userDetails, HttpServletResponse response){
         return generateToken(new HashMap<>(), userDetails, response);
     }

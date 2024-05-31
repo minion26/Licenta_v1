@@ -6,6 +6,7 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.licentav1.domain.Materials;
 import com.example.licentav1.dto.MaterialsDTO;
+import com.example.licentav1.dto.MaterialsInfoDTO;
 import com.example.licentav1.service.MaterialsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -91,5 +92,11 @@ public class MaterialsController {
         ObjectMapper objectMapper = new ObjectMapper();
         MaterialsDTO materialsDTO = objectMapper.readValue(materialsDTOJson, MaterialsDTO.class);
         materialsService.updateFile(file, id, materialsDTO);
+    }
+
+    @GetMapping("/get/idLectures={id}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<MaterialsInfoDTO> getMaterialsByIdLectures(@PathVariable UUID id) {
+        return materialsService.getMaterialsByIdLectures(id);
     }
 }
