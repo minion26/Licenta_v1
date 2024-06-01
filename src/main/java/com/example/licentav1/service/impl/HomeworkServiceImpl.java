@@ -300,4 +300,88 @@ public class HomeworkServiceImpl implements HomeworkService {
         homework.setGrade(homeworkGradeDTO.getGrade());
         homeworkRepository.save(homework);
     }
+
+    @Override
+    public HomeworkDTO getHomework(UUID idHomework) {
+        Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        List<HomeworkFiles> homeworkFiles = homework.getHomeworkFiles();
+
+        StudentHomework studentHomework = studentHomeworkRepository.findByIdHomework(idHomework).orElseThrow(() -> new RuntimeException("Student homework not found"));
+        Students student = studentHomework.getStudent();
+        Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        HomeworkDTO homeworkDTO = new HomeworkDTO();
+
+        homeworkDTO.setIdHomework(homework.getIdHomework());
+        homeworkDTO.setIdStudent(student.getIdUsers());
+        homeworkDTO.setNrMatricol(student.getNrMatriculation());
+        homeworkDTO.setFirstNameStudent(user.getFirstName());
+        homeworkDTO.setLastNameStudent(user.getLastName());
+        homeworkDTO.setGrade(homework.getGrade());
+        homeworkDTO.setUploadDate(homework.getDueDate());
+
+        List<String> filesNames = new ArrayList<>();
+        for (HomeworkFiles homeworkFile : homeworkFiles) {
+            filesNames.add(homeworkFile.getFileUrl());
+        }
+
+        homeworkDTO.setFileName(filesNames);
+
+        return homeworkDTO;
+    }
+
+    @Override
+    public ResponseEntity<Resource> getFile(String name) {
+        S3Object s3Object = s3Service.getObjectHomework(name);
+        InputStreamResource resource = new InputStreamResource(s3Object.getObjectContent());
+
+        //extract file extension
+        String fileExtension = name.substring(name.lastIndexOf(".") + 1);
+
+        //set content type based on file extension
+        String contentType = "application/octet-stream"; //default content type
+        if ("pdf".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/pdf";
+        } else if ("png".equalsIgnoreCase(fileExtension)) {
+            contentType = "image/png";
+        } else if ("jpg".equalsIgnoreCase(fileExtension) || "jpeg".equalsIgnoreCase(fileExtension)) {
+            contentType = "image/jpeg";
+        } else if ("doc".equalsIgnoreCase(fileExtension) || "docx".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/msword";
+        } else if ("xls".equalsIgnoreCase(fileExtension) || "xlsx".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/vnd.ms-excel";
+        } else if ("ppt".equalsIgnoreCase(fileExtension) || "pptx".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/vnd.ms-powerpoint";
+        } else if ("zip".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/zip";
+        } else if ("txt".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/plain";
+        } else if ("py".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-python";
+        } else if ("java".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-java-source";
+        } else if ("cpp".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-c++src";
+        } else if ("c".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/x-csrc";
+        }else if ("html".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/html";
+        } else if ("css".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/css";
+        } else if ("js".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/javascript";
+        } else if ("csv".equalsIgnoreCase(fileExtension)) {
+            contentType = "text/csv";
+        } else if ("xml".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/xml";
+        } else if ("json".equalsIgnoreCase(fileExtension)) {
+            contentType = "application/json";
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
+                .body(resource);
+    }
 }

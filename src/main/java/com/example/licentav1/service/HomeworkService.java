@@ -29,4 +29,8 @@ public interface HomeworkService {
     List<HomeworkDTO> getAllHomeworks(UUID idHomeworkAnnouncement);
 
     void gradeHomework(UUID idHomework, HomeworkGradeDTO homeworkGradeDTO);
+
+    HomeworkDTO getHomework(UUID idHomework);
+
+    ResponseEntity<Resource> getFile(String name);
 }

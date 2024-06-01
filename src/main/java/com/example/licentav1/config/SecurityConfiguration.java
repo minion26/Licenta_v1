@@ -1,5 +1,6 @@
 package com.example.licentav1.config;
 
+import com.example.licentav1.dto.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +46,7 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authConfig -> {
                     authConfig.requestMatchers("/api/v1/auth/**").permitAll(); //white list
+                    authConfig.requestMatchers("/api/v1/homework-announcements/**").hasAuthority("TEACHER");
                     authConfig.anyRequest().authenticated();
                         }
                 );

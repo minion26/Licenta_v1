@@ -103,6 +103,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
             homeworkAnnouncement.setDescription(homeworkAnnouncementsDTO.getDescription());
         }
         if (homeworkAnnouncementsDTO.getDueDate() != null) {
+            System.out.println(homeworkAnnouncementsDTO.getDueDate());
             homeworkAnnouncement.setDueDate(homeworkAnnouncementsDTO.getDueDate());
         }
         if (homeworkAnnouncementsDTO.getScore() != null) {

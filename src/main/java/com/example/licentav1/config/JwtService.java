@@ -57,12 +57,23 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails,  HttpServletResponse response) {
+        //delete old cookie
+        ResponseCookie oldCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0) // Set max age to 0 to delete the cookie
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, oldCookie.toString());
+
         Users users = usersRepository.findByFacultyEmail(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
         UUID userId = users.getIdUsers();
         extraClaims.put("userId", userId);
 
         Integer roleId = users.getRoleId();
         extraClaims.put("roleId", roleId);
+        System.out.println("put role id: " + roleId);
 
         if (roleId == 3){
             //STUDENT
@@ -136,5 +147,24 @@ public class JwtService {
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String extractRole(String token) {
+        System.out.println("Extracting role from token"+ token);
+        Claims claims = extractAllClaims(token);
+        Integer roleId = claims.get("roleId", Integer.class);
+        System.out.println("Role id: " + roleId);
+
+        // Convert roleId to role name
+        String role  = switch (roleId) {
+            case 1 -> "ADMIN";
+            case 2 -> "TEACHER";
+            case 3 -> "STUDENT";
+            default -> "UNKNOWN";
+        };
+
+        System.out.println("Role: " + role);
+
+        return role;
     }
 }

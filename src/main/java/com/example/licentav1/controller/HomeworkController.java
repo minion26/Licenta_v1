@@ -60,9 +60,21 @@ public class HomeworkController {
         return homeworkService.getAllHomeworks(idHomeworkAnnouncement);
     }
 
+    @GetMapping("/idHomework={idHomework}")
+    @ResponseStatus(HttpStatus.OK)
+    public HomeworkDTO getHomework(@PathVariable("idHomework") UUID idHomework) {
+        return homeworkService.getHomework(idHomework);
+    }
+
     @PatchMapping("/grade/idHomework={idHomework}")
     @ResponseStatus(HttpStatus.OK)
     public void gradeHomework(@PathVariable("idHomework") UUID idHomework, @RequestBody HomeworkGradeDTO homeworkGradeDTO){
         homeworkService.gradeHomework(idHomework, homeworkGradeDTO);
+    }
+
+    @GetMapping("/list/{name}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Resource> getFile(@PathVariable String name) {
+        return homeworkService.getFile(name);
     }
 }

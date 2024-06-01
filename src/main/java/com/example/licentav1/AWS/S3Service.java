@@ -123,4 +123,8 @@ public class S3Service {
     public S3Object getObject(String key) {
         return s3Client.getObject(new GetObjectRequest(bucketName, key));
     }
+
+    public S3Object getObjectHomework(String name) {
+        return s3Client.getObject(new GetObjectRequest(bucketName2, name));
+    }
 }
