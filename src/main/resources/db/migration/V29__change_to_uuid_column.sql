@@ -1,0 +1,2 @@
+ALTER TABLE feedback
+    ALTER COLUMN id_note TYPE UUID ;

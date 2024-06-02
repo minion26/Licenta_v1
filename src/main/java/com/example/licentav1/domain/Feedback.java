@@ -27,4 +27,15 @@ public class Feedback {
     @JoinColumn(name = "id_homework", nullable = false)
     @JsonBackReference
     private Homework homework;
+
+
+    @Column(name= "positionX")
+    private Integer positionX;
+
+    @Column(name= "positionY")
+    private Integer positionY;
+
+    @Column(name= "notetext")
+    private String noteText;
+
 }

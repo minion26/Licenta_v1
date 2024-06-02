@@ -16,4 +16,8 @@ import java.util.UUID;
 public class FeedbackDTO {
     private UUID idFeedback;
     private String content;
+//    private UUID idNote;
+    private Integer positionX;
+    private Integer positionY;
+    private String noteText;
 }

@@ -6,11 +6,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.UUID;
+
 @Component
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class FeedbackCreationDTO {
-    private String content;
+    private UUID idNote;
+    private Integer positionX;
+    private Integer positionY;
+    private String noteText;
 }

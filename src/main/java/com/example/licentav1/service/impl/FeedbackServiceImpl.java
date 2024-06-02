@@ -66,7 +66,17 @@ public class FeedbackServiceImpl implements FeedbackService {
     public void updateFeedback(UUID idFeedback, FeedbackCreationDTO feedbackCreationDTO) {
         Feedback feedback = feedbackRepository.findById(idFeedback).orElseThrow(() -> new RuntimeException("Feedback not found"));
 
-        feedback.setContent(feedbackCreationDTO.getContent());
+        if(feedbackCreationDTO.getPositionX() != null) {
+            feedback.setPositionX(feedbackCreationDTO.getPositionX());
+        }
+        if(feedbackCreationDTO.getPositionY() != null) {
+            feedback.setPositionY(feedbackCreationDTO.getPositionY());
+        }
+        if(feedbackCreationDTO.getNoteText() != null) {
+            feedback.setNoteText(feedbackCreationDTO.getNoteText());
+            feedback.setContent(feedbackCreationDTO.getNoteText());
+        }
+
 
         feedbackRepository.save(feedback);
     }
