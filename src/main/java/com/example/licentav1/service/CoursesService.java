@@ -2,6 +2,7 @@ package com.example.licentav1.service;
 
 import com.example.licentav1.dto.CoursesCreationDTO;
 import com.example.licentav1.dto.CoursesDTO;
+import com.example.licentav1.dto.TeachersDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,4 +24,6 @@ public interface CoursesService {
     CoursesDTO getCourseById(UUID id);
 
     List<CoursesDTO> getCoursesByTeacher(UUID idTeacher);
+
+    List<TeachersDTO> getTeachersByCourse(UUID idCourse);
 }

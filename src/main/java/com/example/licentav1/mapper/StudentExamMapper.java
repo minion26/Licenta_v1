@@ -31,4 +31,5 @@ public class StudentExamMapper {
                 .examStatus(studentExam.getExamStatus())
                 .build();
     }
+
 }

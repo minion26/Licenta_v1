@@ -4,6 +4,7 @@ import com.example.licentav1.advice.exceptions.CourseAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.dto.CoursesCreationDTO;
 import com.example.licentav1.dto.CoursesDTO;
+import com.example.licentav1.dto.TeachersDTO;
 import com.example.licentav1.service.CoursesService;
 
 import jakarta.validation.Valid;
@@ -73,6 +74,12 @@ public class CoursesController {
     @ResponseStatus(HttpStatus.OK)
     public void updateCourse(@PathVariable("id") UUID id, @RequestBody CoursesDTO coursesDTO) throws CourseNotFoundException {
         coursesService.updateCourse(id, coursesDTO);
+    }
+
+    @GetMapping("/get-teachers/idCourse={idCourse}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<TeachersDTO> getTeachersByCourse(@PathVariable UUID idCourse) {
+        return coursesService.getTeachersByCourse(idCourse);
     }
 
 }

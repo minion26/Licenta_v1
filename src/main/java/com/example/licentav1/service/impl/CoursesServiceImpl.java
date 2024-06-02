@@ -6,18 +6,23 @@ import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Didactic;
 import com.example.licentav1.domain.Teachers;
+import com.example.licentav1.domain.Users;
 import com.example.licentav1.dto.CoursesCreationDTO;
 import com.example.licentav1.dto.CoursesDTO;
+import com.example.licentav1.dto.TeachersDTO;
 import com.example.licentav1.mapper.CoursesMapper;
+import com.example.licentav1.mapper.TeachersMapper;
 import com.example.licentav1.repository.CoursesRepository;
 import com.example.licentav1.repository.DidacticRepository;
 import com.example.licentav1.repository.TeachersRepository;
+import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.CoursesService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,11 +32,13 @@ public class CoursesServiceImpl implements CoursesService {
     private final CoursesRepository coursesRepository;
     private final DidacticRepository didacticRepository;
     private final TeachersRepository teacherRepository;
+    private final UsersRepository usersRepository;
 
-    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository) {
+    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository, UsersRepository usersRepository) {
         this.coursesRepository = coursesRepository;
         this.didacticRepository = didacticRepository;
         this.teacherRepository = teacherRepository;
+        this.usersRepository = usersRepository;
     }
 
 
@@ -62,6 +69,23 @@ public class CoursesServiceImpl implements CoursesService {
         List<Didactic> didacticList = didacticRepository.findAllByIdTeacher(idTeacher).orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
         return didacticList.stream().map(Didactic::getCourses).map(CoursesMapper::toDTO).toList();
+    }
+
+    @Override
+    public List<TeachersDTO> getTeachersByCourse(UUID idCourse) {
+        Courses courses = coursesRepository.findById(idCourse).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+        List<Didactic> didacticList = didacticRepository.findAllByIdCourse(idCourse).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        List<TeachersDTO> teachersDtos = new ArrayList<>();
+        for (Didactic didactic : didacticList) {
+            Teachers teacher = teacherRepository.findById(didactic.getTeachers().getIdUsers()).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+            Users user = usersRepository.findById(teacher.getIdUsers()).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+            TeachersDTO teachersDTO = TeachersMapper.toDTO(user, teacher);
+
+            teachersDtos.add(teachersDTO);
+        }
+
+        return teachersDtos;
     }
 
     @Override

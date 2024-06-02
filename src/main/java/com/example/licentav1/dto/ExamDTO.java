@@ -20,7 +20,7 @@ import java.util.UUID;
 public class ExamDTO {
     private UUID idExam;
     private String name;
-    private List<QuestionDTO> questions;
+    private List<QuestionDTO> question;
     private Integer timeInMinutes;
     private Integer totalScore;
     private Integer passingScore;

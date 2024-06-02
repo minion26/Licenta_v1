@@ -2,6 +2,7 @@ package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.advice.exceptions.ExamNotFoundException;
+import com.example.licentav1.advice.exceptions.StudentExamNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.*;
@@ -115,7 +116,7 @@ public class ExamServiceImpl implements ExamService {
 
                         questions.add(questionDTO);
                     }
-                    examDTO.setQuestions(questions);
+                    examDTO.setQuestion(questions);
 
                     //gasesc profesorii pentru examen
                     List<TeacherExam> teacherExams = teacherExamRepository.findAllByIdExam(exam.getIdExam());
@@ -178,20 +179,196 @@ public class ExamServiceImpl implements ExamService {
             exam.setTimeInMinutes(examCreationDTO.getTimeInMinutes());
 
         List<Question> questions = questionRepository.findAllByIdExam(exam.getIdExam());
-        for(Question q: questions){
 
-            for (QuestionCreationDTO questionDTO : examCreationDTO.getQuestion()) {
-
-                if(q.getIdQuestion().equals(questionDTO.getIdQuestion())){
-
-                    if(questionDTO.getQuestionText() != null)
-                        q.setQuestionText(questionDTO.getQuestionText());
-                    questionRepository.save(q);
+            for (Question q : questions) {
+                //daca gasesc intrebarea in lista de intrebari din examen
+                //o actualizez
+                List<QuestionCreationDTO> questionsDTO = examCreationDTO.getQuestion();
+                if(questionsDTO != null) {
+                    for (QuestionCreationDTO questionDTO : examCreationDTO.getQuestion()) {
+                        if (q.getIdQuestion().equals(questionDTO.getIdQuestion())) {
+                            if (questionDTO.getQuestionText() != null)
+                                q.setQuestionText(questionDTO.getQuestionText());
+                        }
+                    }
                 }
+                questionRepository.save(q);
+
+//                List<QuestionCreationDTO> questionsDTO = examCreationDTO.getQuestion();
+//                if(questionsDTO != null) {
+//                    for (QuestionCreationDTO questionDTO : examCreationDTO.getQuestion()) {
+//
+//                        if (q.getIdQuestion().equals(questionDTO.getIdQuestion())) {
+//
+//                            if (questionDTO.getQuestionText() != null)
+//                                q.setQuestionText(questionDTO.getQuestionText());
+//
+//                        }
+//
+//                    }
+//                }
+//                questionRepository.save(q);
             }
-        }
+
 
         examRepository.save(exam);
 
+    }
+
+    @Override
+    public List<ExamDTO> getExamsByCourse(UUID idCourse) {
+        Courses courses = coursesRepository.findById(idCourse).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        List<Exam> exams = examRepository.findAllByCourses(idCourse).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        List<ExamDTO> examDTOS = new ArrayList<>();
+
+        for(Exam exam: exams){
+            ExamDTO examDTO = ExamMapper.toDTO(exam);
+
+            //gasesc intrebarile pentru examen
+            List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
+            List<QuestionDTO> questions = new ArrayList<>();
+            for(QuestionsExam qe: questionsExams){
+                QuestionDTO questionDTO = new QuestionDTO();
+                questionDTO.setIdQuestion(qe.getQuestion().getIdQuestion());
+                questionDTO.setQuestionText(qe.getQuestion().getQuestionText());
+                questionDTO.setIdExam(qe.getExam().getIdExam());
+
+
+                //gasesc raspunsurile corecte
+                CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(qe.getIdQuestionsExam()).orElse(null);
+                // transform raspunsurile corecte intr-o lista de stringuri
+                List<CorrectAnswersExamDTO> list = new ArrayList<>();
+                if(correctAnswersExam != null){
+                    list.add(CorrectAnswersExamMapper.toDTO(correctAnswersExam));
+                }
+                questionDTO.setCorrectAnswers(list);
+
+                questions.add(questionDTO);
+            }
+            examDTO.setQuestion(questions);
+
+            //gasesc profesorii pentru examen
+            List<TeacherExam> teacherExams = teacherExamRepository.findAllByIdExam(exam.getIdExam());
+            List<UUID> teacherIds = new ArrayList<>();
+            for(TeacherExam te: teacherExams){
+                teacherIds.add(te.getTeacher().getIdUsers());
+            }
+            examDTO.setIdTeachers(teacherIds);
+
+            //gasesc studentii pentru examen
+            List<StudentExam> studentExams = studentExamRepository.findAllStudentsByExam(exam.getIdExam());
+            List<StudentExamDTO> studentExamDTOs = studentExams.stream()
+                    .map(StudentExamMapper::toDTO)
+                    .collect(Collectors.toList());
+            examDTO.setStudentExamDTO(studentExamDTOs);
+
+            examDTOS.add(examDTO);
+        }
+
+        return examDTOS;
+    }
+
+    @Override
+    public ExamDTO getExamById(UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        ExamDTO examDTO = ExamMapper.toDTO(exam);
+
+        //gasesc intrebarile pentru examen
+        List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
+        List<QuestionDTO> questions = new ArrayList<>();
+        for(QuestionsExam qe: questionsExams){
+            QuestionDTO questionDTO = new QuestionDTO();
+            questionDTO.setIdQuestion(qe.getQuestion().getIdQuestion());
+            questionDTO.setQuestionText(qe.getQuestion().getQuestionText());
+            questionDTO.setIdExam(qe.getExam().getIdExam());
+
+
+            //gasesc raspunsurile corecte
+            CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(qe.getIdQuestionsExam()).orElse(null);
+            // transform raspunsurile corecte intr-o lista de stringuri
+            List<CorrectAnswersExamDTO> list = new ArrayList<>();
+            if(correctAnswersExam != null){
+                list.add(CorrectAnswersExamMapper.toDTO(correctAnswersExam));
+            }
+            questionDTO.setCorrectAnswers(list);
+
+            questions.add(questionDTO);
+        }
+        examDTO.setQuestion(questions);
+
+        //gasesc profesorii pentru examen
+        List<TeacherExam> teacherExams = teacherExamRepository.findAllByIdExam(exam.getIdExam());
+        List<UUID> teacherIds = new ArrayList<>();
+        for(TeacherExam te: teacherExams){
+            teacherIds.add(te.getTeacher().getIdUsers());
+        }
+        examDTO.setIdTeachers(teacherIds);
+
+        //gasesc studentii pentru examen
+        List<StudentExam> studentExams = studentExamRepository.findAllStudentsByExam(exam.getIdExam());
+        List<StudentExamDTO> studentExamDTOs = studentExams.stream()
+                .map(StudentExamMapper::toDTO)
+                .collect(Collectors.toList());
+        examDTO.setStudentExamDTO(studentExamDTOs);
+
+        return examDTO;
+    }
+
+    @Override
+    public List<StudentExamFrontDTO> getStudentsByExam(UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        List<StudentExam> studentExams = studentExamRepository.findAllStudentsByExam(exam.getIdExam());
+        List<StudentExamFrontDTO> studentExamFrontDTOS = new ArrayList<>();
+
+        for(StudentExam se: studentExams){
+            StudentExamFrontDTO studentExamFrontDTO = new StudentExamFrontDTO();
+            studentExamFrontDTO.setIdStudentExam(se.getIdStudentExam());
+            studentExamFrontDTO.setIdStudent(se.getStudent().getIdUsers());
+
+            Students student = se.getStudent();
+            Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new StudentExamNotFoundException("Student not found"));
+            String studentName = user.getFirstName() + " " + user.getLastName();
+
+            studentExamFrontDTO.setStudentName(studentName);
+            studentExamFrontDTO.setIdExam(se.getExam().getIdExam());
+            studentExamFrontDTO.setScore(se.getScore());
+            studentExamFrontDTO.setExamStatus(se.getExamStatus());
+            studentExamFrontDTOS.add(studentExamFrontDTO);
+        }
+
+        return studentExamFrontDTOS;
+    }
+
+    @Override
+    public List<QuestionDTO> getQuestionsAndAnswersByExam(UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        List<QuestionDTO> questions = new ArrayList<>();
+
+        List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
+
+        for(QuestionsExam qe: questionsExams){
+            QuestionDTO questionDTO = new QuestionDTO();
+            questionDTO.setIdQuestion(qe.getQuestion().getIdQuestion());
+            questionDTO.setQuestionText(qe.getQuestion().getQuestionText());
+            questionDTO.setIdExam(qe.getExam().getIdExam());
+
+            //gasesc raspunsurile corecte
+            CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(qe.getIdQuestionsExam()).orElse(null);
+            // transform raspunsurile corecte intr-o lista de stringuri
+            List<CorrectAnswersExamDTO> list = new ArrayList<>();
+            if(correctAnswersExam != null){
+                list.add(CorrectAnswersExamMapper.toDTO(correctAnswersExam));
+            }
+            questionDTO.setCorrectAnswers(list);
+
+            questions.add(questionDTO);
+        }
+
+        return questions;
     }
 }
