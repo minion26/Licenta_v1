@@ -57,4 +57,10 @@ public class CorrectAnswersExamController {
     public void updateCorrectAnswersExam(@PathVariable UUID idAnswer, @RequestBody CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
         correctAnswersExamService.updateCorrectAnswersExam(idAnswer, correctAnswersExamCreationDTO);
     }
+
+    @PatchMapping("/updateByExam/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateCorrectAnswersExam(@PathVariable UUID idExam, @RequestBody Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO) {
+        correctAnswersExamService.updateListOfCorrectAnswersExam(idExam, mapOfCorrectAnswersExamCreationDTO);
+    }
 }

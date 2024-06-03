@@ -8,7 +8,7 @@ import java.util.UUID;
 public interface QuestionService {
     List<QuestionDTO> getAllQuestionsByExam(UUID idExam);
 
-    void createQuestion(QuestionDTO questionDTO, UUID idExam);
+    void createQuestion(List<QuestionDTO> questionsDTO, UUID idExam);
 
     void deleteQuestion(UUID idQuestion, UUID idExam);
 }

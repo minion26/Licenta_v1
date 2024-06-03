@@ -25,8 +25,8 @@ public class QuestionController {
 
     @PostMapping("/create/question/idExam={idExam}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createQuestion(@RequestBody QuestionDTO questionDTO, @PathVariable UUID idExam) {
-        questionService.createQuestion(questionDTO, idExam);
+    public void createQuestion(@RequestBody List<QuestionDTO> questionsDTO, @PathVariable UUID idExam) {
+        questionService.createQuestion(questionsDTO, idExam);
     }
 
     @DeleteMapping("/delete/idQuestion={idQuestion}/idExam={idExam}")

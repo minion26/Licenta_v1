@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,4 +19,7 @@ public interface StudentAnswersExamRepository extends JpaRepository<StudentAnswe
 
     @Query(value="SELECT * FROM student_answers_exam WHERE id_student_exam = :idStudentExam AND needs_review = :needsReview", nativeQuery = true)
     List<StudentAnswersExam> findAllByStudentExamAndNeedsReview(@Param("idStudentExam") UUID idStudentExam,@Param("needsReview") boolean b);
+
+    @Query(value="SELECT * FROM student_answers_exam WHERE id_question_exam = :idQuestionsExam", nativeQuery = true)
+    Optional<StudentAnswersExam> findByIdQuestionExam(UUID idQuestionsExam);
 }

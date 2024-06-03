@@ -2,6 +2,7 @@ package com.example.licentav1.controller;
 
 import com.example.licentav1.dto.StudentExamCreationDTO;
 import com.example.licentav1.dto.StudentExamDTO;
+import com.example.licentav1.dto.StudentExamFrontDTO;
 import com.example.licentav1.service.StudentExamService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -58,6 +59,10 @@ public class StudentExamController {
     }
 
 
-
+    @GetMapping("/get/idStudentExam={idStudentExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public StudentExamFrontDTO getStudentExamById(@PathVariable UUID idStudentExam) {
+        return studentExamService.getStudentExamById(idStudentExam);
+    }
 
 }

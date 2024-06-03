@@ -6,6 +6,7 @@ import com.example.licentav1.advice.exceptions.StudentNotFoundException;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.StudentExamCreationDTO;
 import com.example.licentav1.dto.StudentExamDTO;
+import com.example.licentav1.dto.StudentExamFrontDTO;
 import com.example.licentav1.mapper.StudentExamMapper;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.StudentExamService;
@@ -26,13 +27,15 @@ public class StudentExamServiceImpl implements StudentExamService {
     private final ExamRepository examRepository;
     private final StudentAnswersExamRepository studentAnswersExamRepository;
     private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
+    private final UsersRepository usersRepository;
 
-    public StudentExamServiceImpl(StudentExamRepository studentExamRepository, StudentsRepository studentsRepository, ExamRepository examRepository, StudentAnswersExamRepository studentAnswersExamRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
+    public StudentExamServiceImpl(StudentExamRepository studentExamRepository, StudentsRepository studentsRepository, ExamRepository examRepository, StudentAnswersExamRepository studentAnswersExamRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, UsersRepository usersRepository) {
         this.studentExamRepository = studentExamRepository;
         this.studentsRepository = studentsRepository;
         this.examRepository = examRepository;
         this.studentAnswersExamRepository = studentAnswersExamRepository;
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
+        this.usersRepository = usersRepository;
     }
 
     @Override
@@ -81,6 +84,8 @@ public class StudentExamServiceImpl implements StudentExamService {
             studentsExam.setExam(exam);
             //set the score to the student-exam
             studentsExam.setScore(-1);
+            //set the exam status
+            studentsExam.setExamStatus(-1);
             //save the student-exam to the database
             studentExamRepository.save(studentsExam);
 
@@ -122,6 +127,23 @@ public class StudentExamServiceImpl implements StudentExamService {
         //save the updated entry to the database
         studentExamRepository.save(studentExam);
 
+    }
+
+    @Override
+    public StudentExamFrontDTO getStudentExamById(UUID idStudentExam) {
+        StudentExam studentExam = studentExamRepository.findById(idStudentExam).orElseThrow(() -> new StudentExamNotFoundException("The student or the exam not found"));
+
+        Students student = studentsRepository.findById(studentExam.getStudent().getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+        Users users = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+        return StudentExamFrontDTO.builder()
+                .idStudentExam(studentExam.getIdStudentExam())
+                .idStudent(studentExam.getStudent().getIdUsers())
+                .studentName(users.getFirstName() + " " + users.getLastName())
+                .idExam(studentExam.getExam().getIdExam())
+                .score(studentExam.getScore())
+                .examStatus(studentExam.getExamStatus())
+                .build();
     }
 
 

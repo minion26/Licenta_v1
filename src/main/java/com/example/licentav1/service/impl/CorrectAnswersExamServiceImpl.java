@@ -130,5 +130,22 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         correctAnswersExamRepository.save(correctAnswersExam);
     }
 
+    @Override
+    public void updateListOfCorrectAnswersExam(UUID idExam, Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        mapOfCorrectAnswersExamCreationDTO.forEach((idQuestion, correctAnswersExamCreationDTO) -> {
+            QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+            CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElseThrow(() -> new AnswerNotFoundException("Answer not found"));
+
+            if (correctAnswersExamCreationDTO.getCorrectAnswer() != null && !correctAnswersExam.getCorrectAnswer().equals(correctAnswersExamCreationDTO.getCorrectAnswer()))
+                correctAnswersExam.setCorrectAnswer(correctAnswersExamCreationDTO.getCorrectAnswer());
+            if (correctAnswersExamCreationDTO.getScore() != null && correctAnswersExam.getScore()!=correctAnswersExamCreationDTO.getScore())
+                correctAnswersExam.setScore(correctAnswersExamCreationDTO.getScore());
+
+            correctAnswersExamRepository.save(correctAnswersExam);
+        });
+    }
+
 
 }

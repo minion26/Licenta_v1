@@ -19,4 +19,6 @@ public interface CorrectAnswersExamService {
     void deleteCorrectAnswersExam(UUID idAnswer);
 
     void updateCorrectAnswersExam(UUID idAnswer, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO);
+
+    void updateListOfCorrectAnswersExam(UUID idExam, Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO);
 }
