@@ -1,8 +1,13 @@
 package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
 import com.example.licentav1.dto.HomeworkDTO;
 import com.example.licentav1.dto.HomeworkGradeDTO;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.Resource;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -37,8 +42,12 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final S3Service s3Service;
     private final HomeworkAnnouncementsRepository homeworkAnnouncementsRepository;
     private final UsersRepository usersRepository;
+    private final HttpServletRequest request;
+    private final TeachersRepository teachersRepository;
+    private final JwtService jwtService;
+    private final DidacticRepository didacticRepository;
 
-    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository) {
+    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository) {
         this.homeworkRepository = homeworkRepository;
         this.studentHomeworkRepository = studentHomeworkRepository;
         this.homeworkFilesRepository = homeworkFilesRepository;
@@ -46,6 +55,10 @@ public class HomeworkServiceImpl implements HomeworkService {
         this.s3Service = s3Service;
         this.homeworkAnnouncementsRepository = homeworkAnnouncementsRepository;
         this.usersRepository = usersRepository;
+        this.request = request;
+        this.teachersRepository = teachersRepository;
+        this.jwtService = jwtService;
+        this.didacticRepository = didacticRepository;
     }
 
 
@@ -255,8 +268,42 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public List<HomeworkDTO> getAllHomeworks(UUID idHomeworkAnnouncement) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+
         // am enuntul temei
         HomeworkAnnouncements homeworkAnnouncements = homeworkAnnouncementsRepository.findById(idHomeworkAnnouncement).orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        //iau lecture
+        Lectures lecture = homeworkAnnouncements.getLectures();
+        //iau cursul
+        Courses course = lecture.getCourses();
+        //iau didactic
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if (didactic == null) {
+            throw new NonAllowedException("You are not allowed to see the submissions for this course");
+        }else{
+            System.out.println("You are allowed to see this course");
+        }
 
         // am lista de studenti care au incarcat tema
         List<StudentHomework> studentHomeworkList = studentHomeworkRepository.findAllByIdHomeworkAnnouncement(idHomeworkAnnouncement);
@@ -303,7 +350,38 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public HomeworkDTO getHomework(UUID idHomework) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        HomeworkAnnouncements homeworkAnnouncements = homework.getHomeworkAnnouncements();
+        Lectures lecture = homeworkAnnouncements.getLectures();
+        Courses course = lecture.getCourses();
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if (didactic == null) {
+            throw new NonAllowedException("You are not allowed to see the submissions for this course");
+        }else{
+            System.out.println("You are allowed to see this course");
+        }
 
         List<HomeworkFiles> homeworkFiles = homework.getHomeworkFiles();
 

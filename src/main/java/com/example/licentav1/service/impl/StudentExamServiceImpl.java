@@ -1,8 +1,7 @@
 package com.example.licentav1.service.impl;
 
-import com.example.licentav1.advice.exceptions.ExamNotFoundException;
-import com.example.licentav1.advice.exceptions.StudentExamNotFoundException;
-import com.example.licentav1.advice.exceptions.StudentNotFoundException;
+import com.example.licentav1.advice.exceptions.*;
+import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.StudentExamCreationDTO;
 import com.example.licentav1.dto.StudentExamDTO;
@@ -10,6 +9,8 @@ import com.example.licentav1.dto.StudentExamFrontDTO;
 import com.example.licentav1.mapper.StudentExamMapper;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.StudentExamService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,14 +29,22 @@ public class StudentExamServiceImpl implements StudentExamService {
     private final StudentAnswersExamRepository studentAnswersExamRepository;
     private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
     private final UsersRepository usersRepository;
+    private final HttpServletRequest request;
+    private final JwtService jwtService;
+    private final TeachersRepository teachersRepository;
+    private final DidacticRepository didacticRepository;
 
-    public StudentExamServiceImpl(StudentExamRepository studentExamRepository, StudentsRepository studentsRepository, ExamRepository examRepository, StudentAnswersExamRepository studentAnswersExamRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, UsersRepository usersRepository) {
+    public StudentExamServiceImpl(StudentExamRepository studentExamRepository, StudentsRepository studentsRepository, ExamRepository examRepository, StudentAnswersExamRepository studentAnswersExamRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, UsersRepository usersRepository, HttpServletRequest request, JwtService jwtService, TeachersRepository teachersRepository, DidacticRepository didacticRepository) {
         this.studentExamRepository = studentExamRepository;
         this.studentsRepository = studentsRepository;
         this.examRepository = examRepository;
         this.studentAnswersExamRepository = studentAnswersExamRepository;
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
         this.usersRepository = usersRepository;
+        this.request = request;
+        this.jwtService = jwtService;
+        this.teachersRepository = teachersRepository;
+        this.didacticRepository = didacticRepository;
     }
 
     @Override
@@ -67,10 +76,44 @@ public class StudentExamServiceImpl implements StudentExamService {
 
     @Override
     public void uploadStudents(MultipartFile file, UUID idExam) throws IOException {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+
         BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()));
         String line;
         //find the exam by id
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //am examenul, iau cursul
+        Courses course = exam.getCourse();
+        //daca gasesc didactic cu profesorul si cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
 
         while ((line = br.readLine()) != null) {
             String[] data = line.split(",");
@@ -131,7 +174,43 @@ public class StudentExamServiceImpl implements StudentExamService {
 
     @Override
     public StudentExamFrontDTO getStudentExamById(UUID idStudentExam) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         StudentExam studentExam = studentExamRepository.findById(idStudentExam).orElseThrow(() -> new StudentExamNotFoundException("The student or the exam not found"));
+
+        //gasesc examenul
+        Exam exam = examRepository.findById(studentExam.getExam().getIdExam()).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+        //gasesc cursul
+        Courses course = exam.getCourse();
+
+        //daca gasesc didactic cu profesorul si cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
 
         Students student = studentsRepository.findById(studentExam.getStudent().getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
         Users users = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));

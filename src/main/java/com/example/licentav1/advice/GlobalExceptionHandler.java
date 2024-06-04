@@ -254,4 +254,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.NOT_FOUND);
 
     }
+
+    @ExceptionHandler(NonAllowedException.class)
+    public ResponseEntity<ErrorObject> handleNonAllowedException(NonAllowedException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.FORBIDDEN.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<ErrorObject>(errorObject, HttpStatus.FORBIDDEN);
+
+    }
 }

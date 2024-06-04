@@ -1,17 +1,18 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
-import com.example.licentav1.domain.Courses;
-import com.example.licentav1.domain.Lectures;
-import com.example.licentav1.domain.Materials;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
+import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.LecturesCreationDTO;
 import com.example.licentav1.dto.LecturesDTO;
 import com.example.licentav1.mapper.LecturesMapper;
-import com.example.licentav1.repository.CoursesRepository;
-import com.example.licentav1.repository.LecturesRepository;
-import com.example.licentav1.repository.MaterialsRepository;
+import com.example.licentav1.repository.*;
 import com.example.licentav1.service.LecturesService;
 import com.example.licentav1.service.MaterialsService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,16 +22,24 @@ import java.util.UUID;
 
 @Service
 public class LecturesServiceImpl implements LecturesService {
-    private LecturesRepository lecturesRepository;
-    private CoursesRepository coursesRepository;
-    private MaterialsRepository materialsRepository;
-    private MaterialsService materialsService;
+    private final LecturesRepository lecturesRepository;
+    private final CoursesRepository coursesRepository;
+    private final MaterialsRepository materialsRepository;
+    private final MaterialsService materialsService;
+    private final JwtService jwtService;
+    private final HttpServletRequest request;
+    private final TeachersRepository teacherRepository;
+    private final DidacticRepository didacticRepository;
 
-    public LecturesServiceImpl(LecturesRepository lecturesRepository, CoursesRepository coursesRepository, MaterialsRepository materialsRepository, MaterialsService materialsService) {
+    public LecturesServiceImpl(LecturesRepository lecturesRepository, CoursesRepository coursesRepository, MaterialsRepository materialsRepository, MaterialsService materialsService, JwtService jwtService, HttpServletRequest request, TeachersRepository teacherRepository, DidacticRepository didacticRepository) {
         this.lecturesRepository = lecturesRepository;
         this.coursesRepository = coursesRepository;
         this.materialsRepository = materialsRepository;
         this.materialsService = materialsService;
+        this.jwtService = jwtService;
+        this.request = request;
+        this.teacherRepository = teacherRepository;
+        this.didacticRepository = didacticRepository;
     }
     @Override
     public List<LecturesDTO> getLectures() {
@@ -111,14 +120,74 @@ public class LecturesServiceImpl implements LecturesService {
 
     @Override
     public LecturesDTO getLecture(UUID idLecture) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         Lectures lecture = lecturesRepository.findById(idLecture).orElseThrow(() -> new CourseNotFoundException("Lecture not found"));
         Courses course = coursesRepository.findById(lecture.getCourses().getIdCourses()).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        //verific daca profesorul preda la cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("You are not allowed to see this course");
+        }else{
+            System.out.println("You are allowed to see this course");
+        }
+
         return LecturesMapper.toDTO(lecture, course);
     }
 
     @Override
     public List<LecturesDTO> getLecturesByCourse(UUID idCourses) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         Courses course = coursesRepository.findById(idCourses).orElseThrow(()-> new CourseNotFoundException("Course not found"));
+
+        //verific daca profesorul preda la cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), idCourses).orElse(null);
+
+        if (didactic == null) {
+            throw new NonAllowedException("You are not allowed to see this course");
+        }else{
+            System.out.println("You are allowed to see this course");
+        }
+
         List<Lectures> lectures = lecturesRepository.findByIdCourses(idCourses);
 
         List<LecturesDTO> lecturesDTO = new ArrayList<>();

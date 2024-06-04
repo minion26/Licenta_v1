@@ -1,6 +1,8 @@
 package com.example.licentav1.repository;
 
+import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Didactic;
+import com.example.licentav1.domain.Teachers;
 import jakarta.validation.constraints.Past;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +26,7 @@ public interface DidacticRepository extends JpaRepository<Didactic, UUID> {
 
     @Query(value="SELECT * FROM didactic WHERE id_courses = :idCourse", nativeQuery = true)
     Optional<List<Didactic>> findAllByIdCourse(UUID idCourse);
+
+    @Query(value="SELECT * FROM didactic WHERE id_courses = :idCourse AND id_teacher = :idUsers", nativeQuery = true)
+    Optional<Didactic> findByTeacherAndCourse(@Param("idUsers") UUID idUsers,@Param("idCourse") UUID idCourses);
 }

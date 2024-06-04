@@ -2,7 +2,9 @@ package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Didactic;
 import com.example.licentav1.domain.Teachers;
@@ -17,6 +19,8 @@ import com.example.licentav1.repository.DidacticRepository;
 import com.example.licentav1.repository.TeachersRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.CoursesService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,12 +37,17 @@ public class CoursesServiceImpl implements CoursesService {
     private final DidacticRepository didacticRepository;
     private final TeachersRepository teacherRepository;
     private final UsersRepository usersRepository;
+    private final HttpServletRequest request;
+    private final JwtService jwtService;
 
-    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository, UsersRepository usersRepository) {
+
+    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository, UsersRepository usersRepository, HttpServletRequest request, JwtService jwtService) {
         this.coursesRepository = coursesRepository;
         this.didacticRepository = didacticRepository;
         this.teacherRepository = teacherRepository;
         this.usersRepository = usersRepository;
+        this.request = request;
+        this.jwtService = jwtService;
     }
 
 
@@ -65,8 +74,37 @@ public class CoursesServiceImpl implements CoursesService {
 
     @Override
     public List<CoursesDTO> getCoursesByTeacher(UUID idTeacher) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+        Teachers teacherFromJwt = teacherRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+
+        //profu cu id din params
         Teachers teacher = teacherRepository.findById(idTeacher).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         List<Didactic> didacticList = didacticRepository.findAllByIdTeacher(idTeacher).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        for (Didactic didactic : didacticList) {
+            if (! didactic.getTeachers().getIdUsers().equals(teacherFromJwt.getIdUsers())) {
+                throw new NonAllowedException("You are not allowed to see this course");
+            }
+        }
 
         return didacticList.stream().map(Didactic::getCourses).map(CoursesMapper::toDTO).toList();
     }

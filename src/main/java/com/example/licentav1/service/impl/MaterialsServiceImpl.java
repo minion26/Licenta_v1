@@ -3,14 +3,17 @@ package com.example.licentav1.service.impl;
 import com.amazonaws.services.s3.model.*;
 import com.example.licentav1.AWS.S3Service;
 import com.example.licentav1.advice.exceptions.FileException;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
 import com.example.licentav1.advice.exceptions.StorageException;
-import com.example.licentav1.domain.Lectures;
-import com.example.licentav1.domain.Materials;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
+import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.MaterialsDTO;
 import com.example.licentav1.dto.MaterialsInfoDTO;
-import com.example.licentav1.repository.LecturesRepository;
-import com.example.licentav1.repository.MaterialsRepository;
+import com.example.licentav1.repository.*;
 import com.example.licentav1.service.MaterialsService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -30,22 +33,67 @@ public class MaterialsServiceImpl implements MaterialsService {
     private S3Service s3Service;
     private MaterialsRepository materialsRepository;
     private LecturesRepository lecturesRepository;
+    private final JwtService jwtService;
+    private final TeachersRepository teacherRepository;
+    private final HttpServletRequest request;
+    private final CoursesRepository coursesRepository;
+    private final DidacticRepository didacticRepository;
 
-    public MaterialsServiceImpl(S3Service s3Service, MaterialsRepository materialsRepository, LecturesRepository lecturesRepository) {
+    public MaterialsServiceImpl(S3Service s3Service, MaterialsRepository materialsRepository, LecturesRepository lecturesRepository, JwtService jwtService, TeachersRepository teacherRepository, HttpServletRequest request, CoursesRepository coursesRepository, DidacticRepository didacticRepository) {
         this.s3Service = s3Service;
         this.materialsRepository = materialsRepository;
         this.lecturesRepository = lecturesRepository;
+        this.jwtService = jwtService;
+        this.teacherRepository = teacherRepository;
+        this.request = request;
+        this.coursesRepository = coursesRepository;
+        this.didacticRepository = didacticRepository;
     }
 
     @Override
     public void uploadFile(List<MultipartFile> file, UUID id, MaterialsDTO materialsDTO) throws IOException {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+
+        //am lecture iau cursul
+        Courses course = lectures.getCourses();
+
+        //am cursul si profesorul iau didactic
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("You are not allowed to see upload to this course");
+        }else{
+            System.out.println("You are allowed to see this course");
+        }
+
+
         for (MultipartFile f : file){
             if (f.isEmpty()) {
                 throw new FileException("File is empty");
             }
 
             try {
-                Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+//                Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
                 if (lectures != null){
                     if (materialsRepository.existsByLecturesAndName(lectures.getIdLecture(), f.getOriginalFilename())) {
                         throw new FileException("File already exists for this lecture");
@@ -215,8 +263,42 @@ public class MaterialsServiceImpl implements MaterialsService {
 
     @Override
     public List<S3ObjectSummary> listFilesByType(UUID id, String type) {
+        //aici id e idLectures
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+
         List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
         Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+
+        //am lecture iau cursul
+        Courses course = lectures.getCourses();
+        //am cursul si profesorul iau didactic
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("You are not allowed to see this material");
+        }else{
+            System.out.println("You are allowed to see this course");
+        }
+
         if (lectures != null) {
             List<Materials> materials = materialsRepository.findByIdLectures(id).orElseThrow(() -> new RuntimeException("Materials not found"));
             for(Materials material : materials){
@@ -286,8 +368,40 @@ public class MaterialsServiceImpl implements MaterialsService {
 
     @Override
     public List<MaterialsInfoDTO> getMaterialsByIdLectures(UUID id) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         // Verificați dacă cursul există
         Lectures lecture = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
+
+        //am lecture, iau cursul
+        Courses course = lecture.getCourses();
+
+        //am cursul și profesorul, iau didactic
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("You are not allowed to see this material");
+        } else {
+            System.out.println("You are allowed to see this course");
+        }
 
         List<MaterialsInfoDTO> materialsInfoDTOS = new ArrayList<>();
         if (lecture != null) {

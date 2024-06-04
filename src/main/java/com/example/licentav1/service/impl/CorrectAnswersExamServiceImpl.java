@@ -1,21 +1,15 @@
 package com.example.licentav1.service.impl;
 
-import com.example.licentav1.advice.exceptions.AnswerNotFoundException;
-import com.example.licentav1.advice.exceptions.CorrectAnswerAlreadyExistsException;
-import com.example.licentav1.advice.exceptions.ExamNotFoundException;
-import com.example.licentav1.advice.exceptions.QuestionsExamNotFoundException;
-import com.example.licentav1.domain.CorrectAnswersExam;
-import com.example.licentav1.domain.Exam;
-import com.example.licentav1.domain.Question;
-import com.example.licentav1.domain.QuestionsExam;
+import com.example.licentav1.advice.exceptions.*;
+import com.example.licentav1.config.JwtService;
+import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.CorrectAnswersExamCreationDTO;
 import com.example.licentav1.dto.CorrectAnswersExamDTO;
 import com.example.licentav1.mapper.CorrectAnswersExamMapper;
-import com.example.licentav1.repository.CorrectAnswersExamRepository;
-import com.example.licentav1.repository.ExamRepository;
-import com.example.licentav1.repository.QuestionRepository;
-import com.example.licentav1.repository.QuestionsExamRepository;
+import com.example.licentav1.repository.*;
 import com.example.licentav1.service.CorrectAnswersExamService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,19 +23,65 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
     private final QuestionsExamRepository questionsExamRepository;
     private final QuestionRepository questionRepository;
     private final ExamRepository examRepository;
+    private final HttpServletRequest request;
+    private final JwtService jwtService;
+    private final TeachersRepository teachersRepository;
+    private final DidacticRepository didacticRepository;
 
-    public CorrectAnswersExamServiceImpl(CorrectAnswersExamRepository correctAnswersExamRepository, QuestionsExamRepository questionsExamRepository, QuestionRepository questionRepository, ExamRepository examRepository) {
+
+    public CorrectAnswersExamServiceImpl(CorrectAnswersExamRepository correctAnswersExamRepository, QuestionsExamRepository questionsExamRepository, QuestionRepository questionRepository, ExamRepository examRepository, HttpServletRequest request, JwtService jwtService, TeachersRepository teachersRepository, DidacticRepository didacticRepository) {
         this.correctAnswersExamRepository = correctAnswersExamRepository;
         this.questionsExamRepository = questionsExamRepository;
         this.questionRepository = questionRepository;
         this.examRepository = examRepository;
+        this.request = request;
+        this.jwtService = jwtService;
+        this.teachersRepository = teachersRepository;
+        this.didacticRepository = didacticRepository;
     }
 
     @Override
     public void createCorrectAnswersExam(UUID idQuestion, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         //Question question = questionRepository.findById(idQuestion).orElseThrow(() -> new QuestionNotFound("Question not found"));
 
         QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+
+        //am question-exam iau examenul
+        Exam exam = examRepository.findById(questionsExam.getExam().getIdExam()).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //am examenul, iau cursul
+        Courses course = exam.getCourse();
+
+        //verific daca profesorul preda la cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
 
         // Check if a correct answer already exists for the given question
         CorrectAnswersExam existingCorrectAnswer = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElse(null);
@@ -57,7 +97,41 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
     @Override
     public void createListOfCorrectAnswersExam(UUID idExam, Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //iau cursul
+        Courses course = exam.getCourse();
+        //verific daca profesorul preda la cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
+
         //List<Question> questions = questionRepository.findAllByExam(exam);
 
         mapOfCorrectAnswersExamCreationDTO.forEach((idQuestion, correctAnswersExamCreationDTO) -> {
@@ -117,8 +191,48 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
     @Override
     public void updateCorrectAnswersExam(UUID idAnswer, CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         // Find the correct answer
         CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findById(idAnswer).orElseThrow(() -> new AnswerNotFoundException("Answer not found"));
+
+        //iau question-exam
+        QuestionsExam questionsExam = questionsExamRepository.findById(correctAnswersExam.getQuestionsExam().getIdQuestionsExam()).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+
+        //iau examenul
+        Exam exam = examRepository.findById(questionsExam.getExam().getIdExam()).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //iau cursul
+        Courses course = exam.getCourse();
+        //vad daca profesorul preda la cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
+
 
         // Update the correct answer
         if (correctAnswersExamCreationDTO.getCorrectAnswer() != null)
@@ -132,7 +246,40 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
     @Override
     public void updateListOfCorrectAnswersExam(UUID idExam, Map<UUID, CorrectAnswersExamCreationDTO> mapOfCorrectAnswersExamCreationDTO) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        //iau cursul
+        Courses course = exam.getCourse();
+        //verific daca profesorul preda la cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
 
         mapOfCorrectAnswersExamCreationDTO.forEach((idQuestion, correctAnswersExamCreationDTO) -> {
             QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));

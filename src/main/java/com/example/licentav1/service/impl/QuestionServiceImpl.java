@@ -1,12 +1,17 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.ExamNotFoundException;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.QuestionDTO;
 import com.example.licentav1.mapper.QuestionMapper;
 import com.example.licentav1.mapper.QuestionsExamMapper;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.QuestionService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,17 +28,60 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionsExamRepository questionsExamRepository;
     private final CorrectAnswersExamRepository correctAnswersExamRepository;
     private final StudentAnswersExamRepository studentAnswersExamRepository;
+    private final JwtService jwtService;
+    private final HttpServletRequest request;
+    private final TeachersRepository teachersRepository;
+    private final DidacticRepository didacticRepository;
 
-    public QuestionServiceImpl(QuestionRepository questionRepository, ExamRepository examRepository, QuestionsExamRepository questionsExamRepository, CorrectAnswersExamRepository correctAnswersExamRepository, StudentAnswersExamRepository studentAnswersExamRepository) {
+    public QuestionServiceImpl(QuestionRepository questionRepository, ExamRepository examRepository, QuestionsExamRepository questionsExamRepository, CorrectAnswersExamRepository correctAnswersExamRepository, StudentAnswersExamRepository studentAnswersExamRepository, JwtService jwtService, HttpServletRequest request, TeachersRepository teachersRepository, DidacticRepository didacticRepository) {
         this.questionRepository = questionRepository;
         this.examRepository = examRepository;
         this.questionsExamRepository = questionsExamRepository;
         this.correctAnswersExamRepository = correctAnswersExamRepository;
         this.studentAnswersExamRepository = studentAnswersExamRepository;
+        this.jwtService = jwtService;
+        this.request = request;
+        this.teachersRepository = teachersRepository;
+        this.didacticRepository = didacticRepository;
     }
 
     @Override
     public List<QuestionDTO> getAllQuestionsByExam(UUID idExam) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+        //iau examenul
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+        //am examenul, iau cursul
+        Courses course = exam.getCourse();
+        //daca gasesc didactic cu profesorul si cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
+
+
         List<CorrectAnswersExam> correctAnswers = new ArrayList<>();
 
         List<QuestionDTO> questionDTOList = new ArrayList<>();
@@ -77,8 +125,40 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public void createQuestion(List<QuestionDTO> questionsDTO, UUID idExam) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         //gasesc examenul
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        Courses course = exam.getCourse();
+
+        //daca gasesc didactic cu profesorul si cursul respectiv
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+        if(didactic == null){
+            throw new NonAllowedException("Teacher does not teach this course");
+        }else{
+            System.out.println("Teacher teaches this course");
+        }
 
         //pentru fiecare intrebare
         for(QuestionDTO questionDTO : questionsDTO){

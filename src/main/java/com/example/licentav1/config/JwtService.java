@@ -110,7 +110,7 @@ public class JwtService {
                 .secure(true)
                 .sameSite("None")
                 .path("/")
-                .maxAge(maxAge) // 1 day
+//                .maxAge(maxAge) // 1 day
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
@@ -166,5 +166,10 @@ public class JwtService {
         System.out.println("Role: " + role);
 
         return role;
+    }
+
+    public UUID getUserIdFromToken(String token) {
+        Claims claims = extractAllClaims(token);
+        return UUID.fromString(claims.get("userId", String.class));
     }
 }
