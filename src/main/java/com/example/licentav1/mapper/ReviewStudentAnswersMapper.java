@@ -35,6 +35,8 @@ public class ReviewStudentAnswersMapper {
 
         reviewStudentAnswersDTO.setQuestion(studentAnswersExam.getQuestionsExam().getQuestion().getQuestionText());
 
+        reviewStudentAnswersDTO.setNeedsReview(studentAnswersExam.isNeedsReview());
+
         return reviewStudentAnswersDTO;
     }
 }

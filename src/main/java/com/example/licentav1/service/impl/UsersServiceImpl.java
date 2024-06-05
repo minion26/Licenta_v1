@@ -5,6 +5,7 @@ import com.example.licentav1.advice.exceptions.UserAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.UserNotFoundException;
 import com.example.licentav1.domain.Roles;
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.UserEditDTO;
 import com.example.licentav1.dto.UsersDTO;
 import com.example.licentav1.mapper.UsersMapper;
 import com.example.licentav1.repository.RolesRepository;
@@ -58,7 +59,7 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
-    public void updateUsers(UUID id, UsersDTO usersDTO) throws UserNotFoundException {
+    public void updateUsers(UUID id, UserEditDTO usersDTO) throws UserNotFoundException {
         Users users = usersRepository.findById(id).orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (usersDTO.getFirstName() != null) {
@@ -70,18 +71,18 @@ public class UsersServiceImpl implements UsersService {
         if (usersDTO.getFacultyEmail() != null) {
             users.setFacultyEmail(usersDTO.getFacultyEmail());
         }
-        if(usersDTO.getRoleId() != null) {
-            users.setRoleId(usersDTO.getRoleId());
-        }
+//        if(usersDTO.getRoleId() != null) {
+//            users.setRoleId(usersDTO.getRoleId());
+//        }
         if (usersDTO.getPersonalEmail() != null) {
             users.setPersonalEmail(usersDTO.getPersonalEmail());
         }
-        if (usersDTO.getPassword() != null) {
-            users.setPassword(passwordEncoder.encode(usersDTO.getPassword()));
-        }
-        if (usersDTO.getRoleId() != null) {
-            users.setRoleId(usersDTO.getRoleId());
-        }
+//        if (usersDTO.getPassword() != null) {
+//            users.setPassword(passwordEncoder.encode(usersDTO.getPassword()));
+//        }
+//        if (usersDTO.getRoleId() != null) {
+//            users.setRoleId(usersDTO.getRoleId());
+//        }
         usersRepository.save(users);
     }
 

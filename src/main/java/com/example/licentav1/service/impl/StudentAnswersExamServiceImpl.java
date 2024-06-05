@@ -1,22 +1,26 @@
 package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.AnswerNotFoundException;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
+import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
-import com.example.licentav1.dto.CorrectAnswersExamCreationDTO;
-import com.example.licentav1.dto.QuestionAnswersDTO;
-import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
+import com.example.licentav1.dto.*;
 import com.example.licentav1.mapper.ReviewStudentAnswersMapper;
 import com.example.licentav1.mapper.StudentAnswersExamMapper;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.ExamService;
 import com.example.licentav1.service.StudentAnswersExamService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
-import com.example.licentav1.dto.ReviewStudentAnswersDTO;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentAnswersExamServiceImpl implements StudentAnswersExamService {
@@ -28,9 +32,12 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
     private final CorrectAnswersExamRepository correctAnswersExamRepository;
     private final CoursesRepository coursesRepository;
     private final DidacticRepository didacticRepository;
+    private final TeachersRepository teacherRepository;
+    private final JwtService jwtService;
+    private final HttpServletRequest request;
 
 
-    public StudentAnswersExamServiceImpl(StudentAnswersExamRepository studentAnswersExamRepository, StudentExamRepository studentExamRepository, QuestionsExamRepository questionsExamRepository, ExamRepository examRepository, StudentsRepository studentsRepository, CorrectAnswersExamRepository correctAnswersExamRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository) {
+    public StudentAnswersExamServiceImpl(StudentAnswersExamRepository studentAnswersExamRepository, StudentExamRepository studentExamRepository, QuestionsExamRepository questionsExamRepository, ExamRepository examRepository, StudentsRepository studentsRepository, CorrectAnswersExamRepository correctAnswersExamRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository, JwtService jwtService, HttpServletRequest request) {
         this.studentAnswersExamRepository = studentAnswersExamRepository;
         this.studentExamRepository = studentExamRepository;
         this.questionsExamRepository = questionsExamRepository;
@@ -39,6 +46,9 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         this.correctAnswersExamRepository = correctAnswersExamRepository;
         this.coursesRepository = coursesRepository;
         this.didacticRepository = didacticRepository;
+        this.teacherRepository = teacherRepository;
+        this.jwtService = jwtService;
+        this.request = request;
     }
 
 
@@ -168,38 +178,68 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
 
     @Override
     public List<ReviewStudentAnswersDTO> getStudentsAnswersForReview() {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        // Get the list of didactics for the teacher
+        List<Didactic> didactics = didacticRepository.findAllByIdTeacher(teacherFromJwt.getIdUsers()).orElse(Collections.emptyList());
+
+        // Convert the list of didactics to a list of course IDs
+
+        List<UUID> courseIds = didactics.stream().map(didactic -> didactic.getCourses().getIdCourses()).toList();
+
         List<ReviewStudentAnswersDTO> reviewStudentAnswersDTOS = new ArrayList<>();
         //for each exam
         List<Exam> exams = examRepository.findAll();
         for (Exam exam : exams){
-            UUID idExam = exam.getIdExam();
+            System.out.println("Exam: " + exam.getCourse().getName());
+            if (courseIds.contains(exam.getCourse().getIdCourses())) {
+                UUID idExam = exam.getIdExam();
 
-            // get the course of the exam
-            Courses course = coursesRepository.findById(exam.getCourse().getIdCourses()).orElseThrow(() -> new RuntimeException("Course not found"));
+                // get the course of the exam
+                Courses course = coursesRepository.findById(exam.getCourse().getIdCourses()).orElseThrow(() -> new RuntimeException("Course not found"));
 
-            //get the didactic of the course
-            List<Didactic> didactic = didacticRepository.findAllByIdCourses(course.getIdCourses()).orElseThrow(() -> new RuntimeException("Didactic not found"));
+                //get the didactic of the course
+                List<Didactic> didactic = didacticRepository.findAllByIdCourses(course.getIdCourses()).orElseThrow(() -> new RuntimeException("Didactic not found"));
 
-            //get the list of teachers
-            List<Teachers> teachers = new ArrayList<>();
-            for (Didactic did : didactic){
-                teachers.add(did.getTeachers());
-            }
+                //get the list of teachers
+                List<Teachers> teachers = new ArrayList<>();
+                for (Didactic did : didactic){
+                    teachers.add(did.getTeachers());
+                }
 
-            // list of all students that took the exam
-            List<StudentExam> studentExams = studentExamRepository.findAllByIdExam(idExam);
+                // list of all students that took the exam
+                List<StudentExam> studentExams = studentExamRepository.findAllByIdExam(idExam);
 
-            // for each student, retrieve all their answers that need review
-            for (StudentExam studentExam : studentExams){
-                // get the list of student answers exams by student exam where needsReview is true
-                List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExamAndNeedsReview(studentExam.getIdStudentExam(), true);
+                // for each student, retrieve all their answers that need review
+                for (StudentExam studentExam : studentExams) {
+                    // get the list of student answers exams by student exam where needsReview is true
+                    List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExamAndNeedsReview(studentExam.getIdStudentExam(), true);
 
-                // map the list of student answers exams to a list of review student answers DTOs
-                for (StudentAnswersExam studentAnswersExam : studentAnswersExams) {
-                    ReviewStudentAnswersDTO reviewStudentAnswersDTO = ReviewStudentAnswersMapper.toDTO(studentExam, studentAnswersExam, exam, teachers);
+                    // map the list of student answers exams to a list of review student answers DTOs
+                    for (StudentAnswersExam studentAnswersExam : studentAnswersExams) {
+                        ReviewStudentAnswersDTO reviewStudentAnswersDTO = ReviewStudentAnswersMapper.toDTO(studentExam, studentAnswersExam, exam, teachers);
 
-                    // add the DTO to the list
-                    reviewStudentAnswersDTOS.add(reviewStudentAnswersDTO);
+                        // add the DTO to the list
+                        reviewStudentAnswersDTOS.add(reviewStudentAnswersDTO);
+                    }
                 }
             }
         }
@@ -238,6 +278,137 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
 
         // save the student answer exam
         studentAnswersExamRepository.save(studentAnswersExam);
+    }
+
+    @Override
+    public ReviewStudentAnswersDTO getStudentAnswerForReview(UUID idStudentAnswerExam) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        // Get the list of didactics for the teacher
+        List<Didactic> didactics = didacticRepository.findAllByIdTeacher(teacherFromJwt.getIdUsers()).orElse(Collections.emptyList());
+
+        // Convert the list of didactics to a list of course IDs
+
+        List<UUID> courseIds = didactics.stream().map(didactic -> didactic.getCourses().getIdCourses()).toList();
+
+        // get the student answer exam by id
+        StudentAnswersExam studentAnswersExam = studentAnswersExamRepository.findById(idStudentAnswerExam).orElseThrow(() -> new AnswerNotFoundException("Student answer exam not found"));
+
+        // get the student exam
+        StudentExam studentExam = studentAnswersExam.getStudentExam();
+
+        // get the exam
+        Exam exam = studentExam.getExam();
+
+        // get the course of the exam
+        Courses course = coursesRepository.findById(exam.getCourse().getIdCourses()).orElseThrow(() -> new RuntimeException("Course not found"));
+
+        //get the didactic of the course
+        List<Didactic> didactic = didacticRepository.findAllByIdCourses(course.getIdCourses()).orElseThrow(() -> new RuntimeException("Didactic not found"));
+
+        //get the list of teachers
+        List<Teachers> teachers = new ArrayList<>();
+        for (Didactic did : didactic){
+            teachers.add(did.getTeachers());
+        }
+
+        // check if the teacher teaches the course of the exam
+        if (courseIds.contains(course.getIdCourses())) {
+            return ReviewStudentAnswersMapper.toDTO(studentExam, studentAnswersExam, exam, teachers);
+        } else {
+            throw new NonAllowedException("Teacher does not teach the course of the exam");
+        }
+
+
+
+    }
+
+    @Override
+    public List<QuestionAndStudentsAnswersDTO> getStudentsAnswers(UUID idExam, UUID idStudent) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new RuntimeException("Exam not found"));
+
+        //iau cursul examenului
+        Courses course = coursesRepository.findById(exam.getCourse().getIdCourses()).orElseThrow(() -> new RuntimeException("Course not found"));
+        //iau didacticul cursului
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+        if (didactic == null) {
+            throw new NonAllowedException("Teacher does not teach the course of the exam");
+        }else{
+            System.out.println("Teacher teaches the course of the exam");
+        }
+
+
+
+        // get the student exam by idExam and idStudent
+        StudentExam studentExam = studentExamRepository.findByIdStudentAndIdExam(idStudent, idExam).orElseThrow(() -> new RuntimeException("Student exam not found"));
+
+        // get the list of student answers exams by student exam
+        List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam());
+
+        // map the list of student answers exams to a list of student answers exam creation DTOs
+        List<QuestionAndStudentsAnswersDTO> questionAndStudentsAnswersDTOS = new ArrayList<>();
+        for (StudentAnswersExam studentAnswersExam : studentAnswersExams){
+            QuestionAndStudentsAnswersDTO questionAndStudentsAnswersDTO = new QuestionAndStudentsAnswersDTO();
+            QuestionsExam questionsExam = studentAnswersExam.getQuestionsExam();
+            if (questionsExam != null) {
+                Question question = questionsExam.getQuestion();
+                if (question != null) {
+                    questionAndStudentsAnswersDTO.setQuestionText(question.getQuestionText());
+                } else {
+                    System.out.println("Question is null for QuestionsExam with ID: " + questionsExam.getIdQuestionsExam());
+                }
+                //iau si raspuunsul corect
+                CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElseThrow(() -> new RuntimeException("Correct answers exam not found"));
+                questionAndStudentsAnswersDTO.setCorrectAnswer(correctAnswersExam.getCorrectAnswer());
+                //iau si scorul
+                questionAndStudentsAnswersDTO.setScore(correctAnswersExam.getScore());
+            } else {
+                System.out.println("QuestionsExam is null for StudentAnswersExam with ID: " + studentAnswersExam.getIdStudentAnswerExam());
+            }
+            questionAndStudentsAnswersDTO.setStudentAnswer(studentAnswersExam.getStudentAnswer());
+            questionAndStudentsAnswersDTOS.add(questionAndStudentsAnswersDTO);
+        }
+
+        return questionAndStudentsAnswersDTOS;
     }
 
 

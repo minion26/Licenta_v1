@@ -52,8 +52,38 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     public void createExam(ExamCreationDTO examCreationDTO, UUID idCourse) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+
+        //am profesorul care a facut request-ul
+        Teachers teacherFromJwt = teachersRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
         //gasesc cursul pentru a asocia examenul
         Courses courses = coursesRepository.findById(idCourse).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), courses.getIdCourses()).orElse(null);
+
+        if(didactic == null) {
+            throw new NonAllowedException("You are not allowed to create this exam");
+        }else{
+            System.out.println("You are allowed to create this exam");
+        }
 
         //gasesc profesorii pentru a asocia examenul
         List<Teachers> teachers = new ArrayList<>();
@@ -160,12 +190,22 @@ public class ExamServiceImpl implements ExamService {
         studentExamRepository.deleteAll(studentExams);
 
 
+        //am id question exam
         List<QuestionsExam> questionsExams = questionsExamRepository.findAllByIdExam(exam.getIdExam());
+        //sterg raspunsurile corecte
+        for(QuestionsExam qe: questionsExams){
+            CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(qe.getIdQuestionsExam()).orElse(null);
+            if(correctAnswersExam != null){
+                correctAnswersExamRepository.delete(correctAnswersExam);
+            }
+        }
+        //acum sterg si id question exam
         questionsExamRepository.deleteAll(questionsExams);
 
         List<TeacherExam> teacherExams = teacherExamRepository.findAllByIdExam(exam.getIdExam());
         teacherExamRepository.deleteAll(teacherExams);
 
+        //sterg intrebarile
         List<Question> questions = questionRepository.findAllByIdExam(exam.getIdExam());
         questionRepository.deleteAll(questions);
 

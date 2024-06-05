@@ -111,7 +111,38 @@ public class CoursesServiceImpl implements CoursesService {
 
     @Override
     public List<TeachersDTO> getTeachersByCourse(UUID idCourse) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+        Teachers teacherFromJwt = teacherRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+
         Courses courses = coursesRepository.findById(idCourse).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        //vad daca profu preda la cursul respectiv
+        Didactic didactics = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), idCourse).orElse(null);
+
+        if (didactics == null) {
+            throw new NonAllowedException("You are not allowed to see this course");
+        }else{
+            System.out.println("Profu preda la cursul respectiv");
+        }
+
         List<Didactic> didacticList = didacticRepository.findAllByIdCourse(idCourse).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         List<TeachersDTO> teachersDtos = new ArrayList<>();

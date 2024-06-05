@@ -25,10 +25,16 @@ public class CorrectAnswersExamController {
         return correctAnswersExamService.getAllCorrectAnswersExam();
     }
 
-    @GetMapping("all/idExam={idExam}")
+    @GetMapping("/all/idExam={idExam}")
     @ResponseStatus(HttpStatus.OK)
     public List<CorrectAnswersExamDTO> getAllCorrectAnswersExamByExam(@PathVariable UUID idExam) {
         return correctAnswersExamService.getAllCorrectAnswersExamByExam(idExam);
+    }
+
+    @GetMapping("/get-by-question/idQuestion={idQuestion}")
+    @ResponseStatus(HttpStatus.OK)
+    public CorrectAnswersExamDTO getCorrectAnswersExamByQuestion(@PathVariable UUID idQuestion) {
+        return correctAnswersExamService.getCorrectAnswersExamByQuestion(idQuestion);
     }
 
 

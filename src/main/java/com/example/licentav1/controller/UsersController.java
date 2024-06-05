@@ -5,6 +5,7 @@ import com.example.licentav1.advice.exceptions.UserAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.UserNotFoundException;
 import com.example.licentav1.domain.Roles;
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.UserEditDTO;
 import com.example.licentav1.dto.UsersDTO;
 import com.example.licentav1.service.RolesService;
 import com.example.licentav1.service.UsersService;
@@ -55,7 +56,7 @@ public class UsersController {
 
     @PatchMapping("/update/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateUsers(@PathVariable(value="id") UUID id , @RequestBody UsersDTO usersDTO) throws UserNotFoundException{
+    public void updateUsers(@PathVariable(value="id") UUID id , @RequestBody UserEditDTO usersDTO) throws UserNotFoundException{
         usersService.updateUsers(id, usersDTO);
     }
 

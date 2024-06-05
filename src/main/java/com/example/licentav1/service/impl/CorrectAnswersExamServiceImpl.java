@@ -294,5 +294,12 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         });
     }
 
+    @Override
+    public CorrectAnswersExamDTO getCorrectAnswersExamByQuestion(UUID idQuestion) {
+        QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));
+        CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElseThrow(() -> new AnswerNotFoundException("Answer not found"));
+        return CorrectAnswersExamMapper.toDTO(correctAnswersExam);
+    }
+
 
 }

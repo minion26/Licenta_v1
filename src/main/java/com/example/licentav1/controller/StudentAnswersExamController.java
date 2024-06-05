@@ -1,6 +1,7 @@
 package com.example.licentav1.controller;
 
 import com.example.licentav1.dto.CorrectAnswersExamCreationDTO;
+import com.example.licentav1.dto.QuestionAndStudentsAnswersDTO;
 import com.example.licentav1.dto.ReviewStudentAnswersDTO;
 import com.example.licentav1.dto.StudentAnswersExamCreationDTO;
 import com.example.licentav1.service.StudentAnswersExamService;
@@ -49,10 +50,22 @@ public class StudentAnswersExamController {
         return studentAnswersExamService.getStudentsAnswersForReview();
     }
 
+    @GetMapping("/view-answer/needs-review/idStudentAnswerExam={idStudentAnswerExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public ReviewStudentAnswersDTO getStudentAnswerForReview(@PathVariable UUID idStudentAnswerExam) {
+        return studentAnswersExamService.getStudentAnswerForReview(idStudentAnswerExam);
+    }
+
     @PostMapping("/reviewed/idStudentAnswerExam={idStudentAnswerExam}")
     @ResponseStatus(HttpStatus.OK)
     public void setReviewed(@PathVariable UUID idStudentAnswerExam, @RequestBody CorrectAnswersExamCreationDTO correctAnswersExamCreationDTO) {
         studentAnswersExamService.setReviewed(idStudentAnswerExam, correctAnswersExamCreationDTO);
+    }
+
+    @GetMapping("/see-students-answers/idExam={idExam}/idStudent={idStudent}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<QuestionAndStudentsAnswersDTO> getStudentsAnswers(@PathVariable UUID idExam, @PathVariable UUID idStudent) {
+        return studentAnswersExamService.getStudentsAnswers(idExam, idStudent);
     }
 
 
