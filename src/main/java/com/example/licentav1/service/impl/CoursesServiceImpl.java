@@ -5,19 +5,13 @@ import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.advice.exceptions.NonAllowedException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.config.JwtService;
-import com.example.licentav1.domain.Courses;
-import com.example.licentav1.domain.Didactic;
-import com.example.licentav1.domain.Teachers;
-import com.example.licentav1.domain.Users;
+import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.CoursesCreationDTO;
 import com.example.licentav1.dto.CoursesDTO;
 import com.example.licentav1.dto.TeachersDTO;
 import com.example.licentav1.mapper.CoursesMapper;
 import com.example.licentav1.mapper.TeachersMapper;
-import com.example.licentav1.repository.CoursesRepository;
-import com.example.licentav1.repository.DidacticRepository;
-import com.example.licentav1.repository.TeachersRepository;
-import com.example.licentav1.repository.UsersRepository;
+import com.example.licentav1.repository.*;
 import com.example.licentav1.service.CoursesService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -39,15 +32,17 @@ public class CoursesServiceImpl implements CoursesService {
     private final UsersRepository usersRepository;
     private final HttpServletRequest request;
     private final JwtService jwtService;
+    private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
 
 
-    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository, UsersRepository usersRepository, HttpServletRequest request, JwtService jwtService) {
+    public CoursesServiceImpl(CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teacherRepository, UsersRepository usersRepository, HttpServletRequest request, JwtService jwtService, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
         this.coursesRepository = coursesRepository;
         this.didacticRepository = didacticRepository;
         this.teacherRepository = teacherRepository;
         this.usersRepository = usersRepository;
         this.request = request;
         this.jwtService = jwtService;
+        this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
     }
 
 
@@ -155,6 +150,52 @@ public class CoursesServiceImpl implements CoursesService {
         }
 
         return teachersDtos;
+    }
+
+    @Override
+    public List<CoursesDTO> getCoursesForStudent(UUID idStudent, Integer semester) {
+       //vreau sa verific daca studentul urmeaza cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+        Users userFromJwt = usersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        //studentul cu id din params
+        Users user = usersRepository.findById(idStudent).orElse(null);
+
+        if (user == null) {
+            throw new NonAllowedException("You are not allowed to see this course");
+        }
+
+        List<StudentsFollowCourses> studentsFollowCoursesList = studentsFollowCoursesRepository.findAllByIdStudent(idStudent).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+        List<CoursesDTO> coursesDtos = new ArrayList<>();
+
+        for (StudentsFollowCourses studentsFollowCourses : studentsFollowCoursesList) {
+            Courses courses = coursesRepository.findById(studentsFollowCourses.getCourse().getIdCourses()).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+            if (courses.getSemester().equals(semester)) {
+                CoursesDTO coursesDTO = CoursesMapper.toDTO(courses);
+                coursesDtos.add(coursesDTO);
+            }
+
+        }
+
+        return coursesDtos;
+
     }
 
     @Override

@@ -2,10 +2,7 @@ package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.*;
 import com.example.licentav1.AWS.S3Service;
-import com.example.licentav1.advice.exceptions.FileException;
-import com.example.licentav1.advice.exceptions.NonAllowedException;
-import com.example.licentav1.advice.exceptions.StorageException;
-import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.advice.exceptions.*;
 import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.MaterialsDTO;
@@ -30,6 +27,7 @@ import java.util.UUID;
 
 @Service
 public class MaterialsServiceImpl implements MaterialsService {
+    private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
     private S3Service s3Service;
     private MaterialsRepository materialsRepository;
     private LecturesRepository lecturesRepository;
@@ -38,8 +36,9 @@ public class MaterialsServiceImpl implements MaterialsService {
     private final HttpServletRequest request;
     private final CoursesRepository coursesRepository;
     private final DidacticRepository didacticRepository;
+    private final StudentsRepository studentRepository;
 
-    public MaterialsServiceImpl(S3Service s3Service, MaterialsRepository materialsRepository, LecturesRepository lecturesRepository, JwtService jwtService, TeachersRepository teacherRepository, HttpServletRequest request, CoursesRepository coursesRepository, DidacticRepository didacticRepository) {
+    public MaterialsServiceImpl(S3Service s3Service, MaterialsRepository materialsRepository, LecturesRepository lecturesRepository, JwtService jwtService, TeachersRepository teacherRepository, HttpServletRequest request, CoursesRepository coursesRepository, DidacticRepository didacticRepository, StudentsRepository studentRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
         this.s3Service = s3Service;
         this.materialsRepository = materialsRepository;
         this.lecturesRepository = lecturesRepository;
@@ -48,6 +47,8 @@ public class MaterialsServiceImpl implements MaterialsService {
         this.request = request;
         this.coursesRepository = coursesRepository;
         this.didacticRepository = didacticRepository;
+        this.studentRepository = studentRepository;
+        this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
     }
 
     @Override
@@ -281,23 +282,40 @@ public class MaterialsServiceImpl implements MaterialsService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + idToken);
-        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
-
 
         List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
         Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
 
-        //am lecture iau cursul
-        Courses course = lectures.getCourses();
-        //am cursul si profesorul iau didactic
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+        if(role.equals("TEACHER")){
+            Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
-        if(didactic == null) {
-            throw new NonAllowedException("You are not allowed to see this material");
+            //am lecture iau cursul
+            Courses course = lectures.getCourses();
+            //am cursul si profesorul iau didactic
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if(didactic == null) {
+                throw new NonAllowedException("You are not allowed to see this material");
+            }else{
+                System.out.println("You are allowed to see this course");
+            }
+
+        }else if(role.equals("STUDENT")){
+            Students studentFromJwt = studentRepository.findById(idToken).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), lectures.getCourses().getIdCourses()).orElse(null);
+            if(studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to see this material");
+            }else{
+                System.out.println("You are allowed to see this course");
+            }
         }else{
-            System.out.println("You are allowed to see this course");
+            throw new NonAllowedException("You are not allowed to see this material");
         }
+
+
 
         if (lectures != null) {
             List<Materials> materials = materialsRepository.findByIdLectures(id).orElseThrow(() -> new RuntimeException("Materials not found"));

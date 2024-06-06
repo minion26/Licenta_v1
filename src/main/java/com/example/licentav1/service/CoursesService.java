@@ -26,4 +26,6 @@ public interface CoursesService {
     List<CoursesDTO> getCoursesByTeacher(UUID idTeacher);
 
     List<TeachersDTO> getTeachersByCourse(UUID idCourse);
+
+    List<CoursesDTO> getCoursesForStudent(UUID idStudent, Integer semester);
 }

@@ -82,4 +82,10 @@ public class CoursesController {
         return coursesService.getTeachersByCourse(idCourse);
     }
 
+    @GetMapping("/get-courses-for-student/idStudent={idStudent}/semester={semester}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CoursesDTO> getCoursesForStudent(@PathVariable UUID idStudent, @PathVariable Integer semester) {
+        return coursesService.getCoursesForStudent(idStudent, semester);
+    }
+
 }

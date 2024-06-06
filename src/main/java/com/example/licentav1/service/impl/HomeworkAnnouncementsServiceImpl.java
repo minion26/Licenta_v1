@@ -27,8 +27,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
     private final TeachersRepository teachersRepository;
     private final JwtService jwtService;
     private final HttpServletRequest request;
+    private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
+    private final StudentsRepository studentsRepository;
 
-    public HomeworkAnnouncementsServiceImpl(HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, LecturesRepository lectureRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teachersRepository, JwtService jwtService, HttpServletRequest request) {
+    public HomeworkAnnouncementsServiceImpl(HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, LecturesRepository lectureRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teachersRepository, JwtService jwtService, HttpServletRequest request, StudentsFollowCoursesRepository studentsFollowCoursesRepository, StudentsRepository studentsRepository) {
         this.homeworkAnnouncementsRepository = homeworkAnnouncementsRepository;
         this.lectureRepository = lectureRepository;
         this.coursesRepository = coursesRepository;
@@ -36,6 +38,8 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         this.teachersRepository = teachersRepository;
         this.jwtService = jwtService;
         this.request = request;
+        this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
+        this.studentsRepository = studentsRepository;
     }
 
     @Override
@@ -110,21 +114,38 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + id);
-        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+        System.out.println("AICI: " + role);
 
         //get the lecture
         Lectures lecture = lectureRepository.findById(idLecture).orElseThrow(() -> new LectureNotFoundException("Lecture not found!"));
 
         //am lecture, iau course
         Courses course = lecture.getCourses();
-        //am course, iau didactic
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
 
-        if(didactic == null) {
-            throw new NonAllowedException("You are not allowed to see this homework announcement!");
-        } else {
-            System.out.println("You are allowed to see this homework announcement!");
+        if(role.equals("TEACHER")){
+            Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+
+            //am course, iau didactic
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if(didactic == null) {
+                throw new NonAllowedException("You are not allowed to see this homework announcement!");
+            } else {
+                System.out.println("You are allowed to see this homework announcement!");
+            }
+        }else if(role.equals("STUDENT")){
+            Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if(studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to see this homework announcement!");
+            }else{
+                System.out.println("You are allowed to see this homework announcement!");
+            }
         }
 
         //get all the homework announcements for the lecture
@@ -224,8 +245,8 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + id);
-        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         HomeworkAnnouncements hA = homeworkAnnouncementsRepository.findById(idHomeworkAnnouncement).orElseThrow(() -> new LectureNotFoundException("Homework announcement not found!"));
 
@@ -235,14 +256,33 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         //am lecture, iau course
         Courses course = lecture.getCourses();
 
-        //am course si teacher, iau didactic
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+        if(role.equals("TEACHER")){
+            Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
-        if (didactic == null) {
-            throw new NonAllowedException("You are not allowed to see this homework announcement!");
-        } else {
-            System.out.println("You are allowed to see this homework announcement!");
+            //am course si teacher, iau didactic
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if (didactic == null) {
+                throw new NonAllowedException("You are not allowed to see this homework announcement!");
+            } else {
+                System.out.println("You are allowed to see this homework announcement!");
+            }
+        }else if(role.equals("STUDENT")){
+            Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if(studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to see this homework announcement!");
+            }else{
+                System.out.println("You are allowed to see this homework announcement!");
+            }
         }
+
+
+
+
+
 
         return HomeworkAnnouncementsMapper.toDTO(hA);
     }

@@ -46,7 +46,7 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authConfig -> {
                     authConfig.requestMatchers("/api/v1/auth/**").permitAll(); //white list
-                    authConfig.requestMatchers("/api/v1/homework-announcements/**").hasAuthority("TEACHER");
+                    authConfig.requestMatchers("/api/v1/homework-announcements/**").hasAnyAuthority("TEACHER", "STUDENT");
                     authConfig.anyRequest().authenticated();
                         }
                 );

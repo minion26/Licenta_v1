@@ -2,6 +2,7 @@ package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.advice.exceptions.NonAllowedException;
+import com.example.licentav1.advice.exceptions.StudentNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
@@ -30,8 +31,10 @@ public class LecturesServiceImpl implements LecturesService {
     private final HttpServletRequest request;
     private final TeachersRepository teacherRepository;
     private final DidacticRepository didacticRepository;
+    private final StudentsRepository studentsRepository;
+    private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
 
-    public LecturesServiceImpl(LecturesRepository lecturesRepository, CoursesRepository coursesRepository, MaterialsRepository materialsRepository, MaterialsService materialsService, JwtService jwtService, HttpServletRequest request, TeachersRepository teacherRepository, DidacticRepository didacticRepository) {
+    public LecturesServiceImpl(LecturesRepository lecturesRepository, CoursesRepository coursesRepository, MaterialsRepository materialsRepository, MaterialsService materialsService, JwtService jwtService, HttpServletRequest request, TeachersRepository teacherRepository, DidacticRepository didacticRepository, StudentsRepository studentsRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
         this.lecturesRepository = lecturesRepository;
         this.coursesRepository = coursesRepository;
         this.materialsRepository = materialsRepository;
@@ -40,6 +43,8 @@ public class LecturesServiceImpl implements LecturesService {
         this.request = request;
         this.teacherRepository = teacherRepository;
         this.didacticRepository = didacticRepository;
+        this.studentsRepository = studentsRepository;
+        this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
     }
     @Override
     public List<LecturesDTO> getLectures() {
@@ -137,20 +142,37 @@ public class LecturesServiceImpl implements LecturesService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + idToken);
-        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         Lectures lecture = lecturesRepository.findById(idLecture).orElseThrow(() -> new CourseNotFoundException("Lecture not found"));
         Courses course = coursesRepository.findById(lecture.getCourses().getIdCourses()).orElseThrow(() -> new CourseNotFoundException("Course not found"));
 
-        //verific daca profesorul preda la cursul respectiv
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+        if(role.equals("TEACHER")){
+            Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
-        if(didactic == null) {
-            throw new NonAllowedException("You are not allowed to see this course");
+            //verific daca profesorul preda la cursul respectiv
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if(didactic == null) {
+                throw new NonAllowedException("You are not allowed to see this course");
+            }else{
+                System.out.println("You are allowed to see this course");
+            }
+        }else if(role.equals("STUDENT")){
+            Students studentFromJwt = studentsRepository.findById(idToken).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+            //verific daca studentul este inscris la cursul respectiv
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if(studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to see this course");
+            }
         }else{
-            System.out.println("You are allowed to see this course");
+            //inseamna ca e admin
+            throw new NonAllowedException("You are not allowed to see this course");
         }
+
 
         return LecturesMapper.toDTO(lecture, course);
     }
@@ -174,19 +196,39 @@ public class LecturesServiceImpl implements LecturesService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + idToken);
-        Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         Courses course = coursesRepository.findById(idCourses).orElseThrow(()-> new CourseNotFoundException("Course not found"));
 
-        //verific daca profesorul preda la cursul respectiv
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), idCourses).orElse(null);
+        if(role.equals("TEACHER")){
+            Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
-        if (didactic == null) {
-            throw new NonAllowedException("You are not allowed to see this course");
+
+            //verific daca profesorul preda la cursul respectiv
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), idCourses).orElse(null);
+
+            if (didactic == null) {
+                throw new NonAllowedException("You are not allowed to see this course");
+            }else{
+                System.out.println("You are allowed to see this course");
+            }
+        }else if (role.equals("STUDENT")){
+            //verific daca studentul este inscris la cursul respectiv
+            Students studentFromJwt = studentsRepository.findById(idToken).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), idCourses).orElse(null);
+
+            if (studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to see this course");
+            }else{
+                System.out.println("You are allowed to see this course");
+            }
         }else{
-            System.out.println("You are allowed to see this course");
+            //inseamna ca e admin
+            throw new NonAllowedException("You are not allowed to see this course");
         }
+
 
         List<Lectures> lectures = lecturesRepository.findByIdCourses(idCourses);
 
