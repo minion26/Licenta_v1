@@ -46,8 +46,9 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final TeachersRepository teachersRepository;
     private final JwtService jwtService;
     private final DidacticRepository didacticRepository;
+    private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
 
-    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository) {
+    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
         this.homeworkRepository = homeworkRepository;
         this.studentHomeworkRepository = studentHomeworkRepository;
         this.homeworkFilesRepository = homeworkFilesRepository;
@@ -59,6 +60,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         this.teachersRepository = teachersRepository;
         this.jwtService = jwtService;
         this.didacticRepository = didacticRepository;
+        this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
     }
 
 
@@ -71,7 +73,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         StudentHomework studentHomework = studentHomeworkRepository.findByIdStudentAndIdHomeworkAnnouncement(idStudent, idHomeworkAnnouncement).orElse(null);
         // daca studentul a mai incarcat deja tema
         if (studentHomework != null) {
-            throw new RuntimeException("Homework already uploaded");
+            throw new NonAllowedException("Homework already uploaded");
         }
 
         Homework homework = HomeworkMapper.map(homeworkAnnouncements);
@@ -367,21 +369,39 @@ public class HomeworkServiceImpl implements HomeworkService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + id);
-        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
-
         HomeworkAnnouncements homeworkAnnouncements = homework.getHomeworkAnnouncements();
         Lectures lecture = homeworkAnnouncements.getLectures();
         Courses course = lecture.getCourses();
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
 
-        if (didactic == null) {
-            throw new NonAllowedException("You are not allowed to see the submissions for this course");
-        }else{
-            System.out.println("You are allowed to see this course");
+        if(role.equals("TEACHER")){
+            Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if (didactic == null) {
+                throw new NonAllowedException("You are not allowed to see the submissions for this course");
+            }else{
+                System.out.println("You are allowed to see this course");
+            }
+
+        }else if(role.equals("STUDENT")){
+            Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Student not found"));
+
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if (studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to upload the homework for this course");
+            }else{
+                System.out.println("You are allowed to upload the homework for this course");
+            }
         }
+
+
+
 
         List<HomeworkFiles> homeworkFiles = homework.getHomeworkFiles();
 
@@ -462,4 +482,6 @@ public class HomeworkServiceImpl implements HomeworkService {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
                 .body(resource);
     }
+
+
 }

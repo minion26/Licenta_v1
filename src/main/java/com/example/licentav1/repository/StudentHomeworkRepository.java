@@ -26,4 +26,7 @@ public interface StudentHomeworkRepository extends JpaRepository<StudentHomework
 
     @Query(value = "SELECT * FROM student_homework WHERE id_homework = :idHomework", nativeQuery = true)
     Optional<StudentHomework> findByIdHomework(@Param("idHomework") UUID idHomework);
+
+    @Query(value = "SELECT * FROM student_homework WHERE id_student = :idStudent", nativeQuery = true)
+    Optional<List<StudentHomework>> findByIdStudent(UUID idStudent);
 }
