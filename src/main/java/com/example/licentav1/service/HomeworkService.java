@@ -33,4 +33,8 @@ public interface HomeworkService {
     HomeworkDTO getHomework(UUID idHomework);
 
     ResponseEntity<Resource> getFile(String name);
+
+    ResponseEntity<UUID> getHomeworkIdFile(UUID idHomework, String name);
+
+//    void deleteHomework(UUID idHomeworkAnnouncement);
 }

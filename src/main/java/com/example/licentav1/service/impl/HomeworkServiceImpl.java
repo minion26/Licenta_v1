@@ -2,6 +2,7 @@ package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.licentav1.advice.exceptions.NonAllowedException;
+import com.example.licentav1.advice.exceptions.StudentNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.config.JwtService;
 import com.example.licentav1.dto.HomeworkDTO;
@@ -47,8 +48,9 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final JwtService jwtService;
     private final DidacticRepository didacticRepository;
     private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
+    private final FeedbackRepository feedbackRepository;
 
-    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
+    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, FeedbackRepository feedbackRepository) {
         this.homeworkRepository = homeworkRepository;
         this.studentHomeworkRepository = studentHomeworkRepository;
         this.homeworkFilesRepository = homeworkFilesRepository;
@@ -61,6 +63,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         this.jwtService = jwtService;
         this.didacticRepository = didacticRepository;
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
+        this.feedbackRepository = feedbackRepository;
     }
 
 
@@ -225,6 +228,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         if (homeworkFiles != null) {
             String name = homeworkFiles.getFileUrl().substring(homeworkFiles.getFileUrl().lastIndexOf("/") + 1);
             System.out.println(name);
+            System.out.println("DELETE: " + homeworkFiles.getFileUrl());
             s3Service.deleteHomeworkFile(name);
             homeworkFilesRepository.delete(homeworkFiles);
 
@@ -232,6 +236,9 @@ public class HomeworkServiceImpl implements HomeworkService {
 
             if (homeworkFilesRepository.findAllByHomework(homeworkFiles.getHomework()).isEmpty()) {
                 studentHomeworkRepository.deleteByHomework(homeworkFiles.getHomework());
+
+                //trebuie sa o sterg si din feedback
+                feedbackRepository.deleteByHomework(homeworkFiles.getHomework().getIdHomework());
 
                 homeworkRepository.delete(homeworkFiles.getHomework());
 
@@ -481,6 +488,66 @@ public class HomeworkServiceImpl implements HomeworkService {
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + name + "\"")
                 .body(resource);
+    }
+
+    @Override
+    public ResponseEntity<UUID> getHomeworkIdFile(UUID idHomework, String name) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
+        System.out.println("id from token: " + id);
+
+        Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
+        HomeworkAnnouncements homeworkAnnouncements = homework.getHomeworkAnnouncements();
+        Lectures lecture = homeworkAnnouncements.getLectures();
+        Courses course = lecture.getCourses();
+
+        if(role.equals("STUDENT")){
+            Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Student not found"));
+
+            StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
+
+            if (studentsFollowCourses == null) {
+                throw new NonAllowedException("You are not allowed to upload the homework for this course");
+            }else{
+                System.out.println("You are allowed to upload the homework for this course");
+            }
+        }
+
+
+        List<HomeworkFiles> homeworkFiles = homework.getHomeworkFiles();
+
+        StudentHomework studentHomework = studentHomeworkRepository.findByIdHomework(idHomework).orElseThrow(() -> new RuntimeException("Student homework not found"));
+        Students student = studentHomework.getStudent();
+        Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new RuntimeException("User not found"));
+
+
+
+        for (HomeworkFiles homeworkFile : homeworkFiles) {
+            String fileUrl = homeworkFile.getFileUrl();
+            String nameFile = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+            System.out.println(nameFile);
+            if(nameFile.equals(name)){
+                return new ResponseEntity<>(homeworkFile.getIdHomeworkFiles(), HttpStatus.OK);
+            }
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 

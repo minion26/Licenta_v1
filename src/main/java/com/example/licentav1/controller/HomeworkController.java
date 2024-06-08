@@ -77,4 +77,10 @@ public class HomeworkController {
     public ResponseEntity<Resource> getFile(@PathVariable String name) {
         return homeworkService.getFile(name);
     }
+
+    @GetMapping("/get-homework-id-file/idHomework={idHomework}/name={name}")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<UUID> getHomeworkIdFile(@PathVariable("idHomework") UUID idHomework, @PathVariable("name") String name) {
+        return homeworkService.getHomeworkIdFile(idHomework, name);
+    }
 }
