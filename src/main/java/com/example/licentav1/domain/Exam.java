@@ -65,4 +65,7 @@ public class Exam {
     @OneToMany(mappedBy = "exam")
     @JsonManagedReference
     private List<QuestionsExam> questionsExams;
+
+    @Column(name="has_started")
+    private Boolean hasStarted;
 }

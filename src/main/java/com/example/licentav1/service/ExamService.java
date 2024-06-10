@@ -24,4 +24,8 @@ public interface ExamService {
     List<StudentExamFrontDTO> getStudentsByExam(UUID idExam);
 
     List<QuestionDTO> getQuestionsAndAnswersByExam(UUID idExam);
+
+    void startExam(UUID idExam);
+
+    boolean isExamStarted(UUID idExam);
 }

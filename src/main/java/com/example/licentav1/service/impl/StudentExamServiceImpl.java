@@ -5,6 +5,7 @@ import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.StudentExamCreationDTO;
 import com.example.licentav1.dto.StudentExamDTO;
+import com.example.licentav1.dto.StudentExamDetailsDTO;
 import com.example.licentav1.dto.StudentExamFrontDTO;
 import com.example.licentav1.mapper.StudentExamMapper;
 import com.example.licentav1.repository.*;
@@ -223,6 +224,67 @@ public class StudentExamServiceImpl implements StudentExamService {
                 .score(studentExam.getScore())
                 .examStatus(studentExam.getExamStatus())
                 .build();
+    }
+
+    @Override
+    public List<StudentExamDetailsDTO> getStudentExamByIdStudent() {
+        //iau id ul din cookie
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + id);
+        Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+
+        //find the exams that the student has by the courses that he is enrolled in
+        List<StudentsFollowCourses> studentsFollowCourses = studentsFollowCoursesRepository.findAllCoursesByStudent(studentFromJwt.getIdUsers());
+
+        if(studentsFollowCourses == null) {
+            throw new StudentNotFoundException("Student not enrolled in any course");
+        }
+
+        //am cursuri, iau examenele de la cursuri
+        List<Exam> exams = new ArrayList<>();
+        for(StudentsFollowCourses studentsFollowCourse : studentsFollowCourses) {
+            exams.addAll(examRepository.findAllByCourse(studentsFollowCourse.getCourse().getIdCourses()));
+        }
+
+        //am examenele, iau student-exam-urile
+        List<StudentExamDetailsDTO> studentExamDetailsDTOS = new ArrayList<>();
+
+        for(Exam exam : exams){
+            List<StudentExam> studentExams = studentExamRepository.findAllByIdExam(exam.getIdExam());
+            for(StudentExam studentExam : studentExams){
+                if(studentExam.getStudent().getIdUsers().equals(studentFromJwt.getIdUsers())){
+                    Users users = usersRepository.findById(studentExam.getStudent().getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+                    studentExamDetailsDTOS.add(StudentExamDetailsDTO.builder()
+                            .idStudentExam(studentExam.getIdStudentExam())
+                            .idStudent(studentExam.getStudent().getIdUsers())
+                            .courseName(exam.getCourse().getName())
+                            .idExam(studentExam.getExam().getIdExam())
+                            .score(studentExam.getScore())
+                            .examStatus(studentExam.getExamStatus())
+                            .build());
+                }
+            }
+        }
+
+
+        return studentExamDetailsDTOS;
+
     }
 
 

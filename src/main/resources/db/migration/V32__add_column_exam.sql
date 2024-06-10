@@ -1,0 +1,2 @@
+ALTER TABLE exam ADD COLUMN
+    has_started BOOLEAN DEFAULT FALSE;

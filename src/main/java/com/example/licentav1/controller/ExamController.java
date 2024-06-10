@@ -67,4 +67,16 @@ public class ExamController {
     public List<QuestionDTO> getQuestionsAndAnswersByExam(@PathVariable UUID idExam) {
         return examService.getQuestionsAndAnswersByExam(idExam);
     }
+
+    @PostMapping("/start-exam/idExam={idExam}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void startExam(@PathVariable UUID idExam) {
+        examService.startExam(idExam);
+    }
+
+    @GetMapping("/is-started/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public boolean isExamStarted(@PathVariable UUID idExam) {
+        return examService.isExamStarted(idExam);
+    }
 }

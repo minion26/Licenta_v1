@@ -35,7 +35,9 @@ public class ExamServiceImpl implements ExamService {
     private final StudentExamRepository studentExamRepository;
     private final CorrectAnswersExamRepository correctAnswersExamRepository;
 
-    public ExamServiceImpl(JwtService jwtService, ExamRepository examRepository, CoursesRepository coursesRepository, QuestionRepository questionRepository, QuestionsExamRepository questionsExamRepository, TeacherExamRepository teacherExamRepository, TeachersRepository teachersRepository, UsersRepository usersRepository, StudentExamRepository studentExamRepository, CorrectAnswersExamRepository correctAnswersExamRepository, DidacticRepository didacticRepository, HttpServletRequest request) {
+    private final StudentsRepository studentsRepository;
+
+    public ExamServiceImpl(JwtService jwtService, ExamRepository examRepository, CoursesRepository coursesRepository, QuestionRepository questionRepository, QuestionsExamRepository questionsExamRepository, TeacherExamRepository teacherExamRepository, TeachersRepository teachersRepository, UsersRepository usersRepository, StudentExamRepository studentExamRepository, CorrectAnswersExamRepository correctAnswersExamRepository, DidacticRepository didacticRepository, HttpServletRequest request, StudentsRepository studentsRepository) {
         this.jwtService = jwtService;
         this.examRepository = examRepository;
         this.coursesRepository = coursesRepository;
@@ -48,6 +50,7 @@ public class ExamServiceImpl implements ExamService {
         this.correctAnswersExamRepository = correctAnswersExamRepository;
         this.didacticRepository = didacticRepository;
         this.request = request;
+        this.studentsRepository = studentsRepository;
     }
 
     @Override
@@ -406,23 +409,44 @@ public class ExamServiceImpl implements ExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
         System.out.println("id from token: " + id);
-
-        //am profesorul care a facut request-ul
-        Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
 
         Courses courseExam = exam.getCourse();
 
-        //daca gasesc didactic cu profesorul si cursul respectiv
-        Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), courseExam.getIdCourses()).orElse(null);
+        if(role.equals("TEACHER")){
+            //am profesorul care a facut request-ul
+            Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
-        if(didactic == null) {
-            throw new NonAllowedException("You are not allowed to see this exam");
-        }else{
-            System.out.println("You are allowed to see this exam");
+            //daca gasesc didactic cu profesorul si cursul respectiv
+            Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), courseExam.getIdCourses()).orElse(null);
+
+            if(didactic == null) {
+                throw new NonAllowedException("You are not allowed to see this exam");
+            }else{
+                System.out.println("You are allowed to see this exam");
+            }
+        }else if(role.equals("STUDENT")){
+            //am studentul care a facut request-ul
+            Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+            //daca gasesc studentul in lista de studenti care dau examenul
+            StudentExam studentExam = studentExamRepository.findByIdStudentAndIdExam(studentFromJwt.getIdUsers(), exam.getIdExam()).orElse(null);
+
+            if(studentExam == null) {
+                throw new NonAllowedException("You are not allowed to see this exam");
+            }else{
+                System.out.println("You are allowed to see this exam");
+            }
         }
+
+
+
+
+
+
 
         ExamDTO examDTO = ExamMapper.toDTO(exam);
 
@@ -553,5 +577,21 @@ public class ExamServiceImpl implements ExamService {
         }
 
         return questions;
+    }
+
+    @Override
+    public void startExam(UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        exam.setHasStarted(true);
+
+        examRepository.save(exam);
+    }
+
+    @Override
+    public boolean isExamStarted(UUID idExam) {
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        return exam.getHasStarted();
     }
 }

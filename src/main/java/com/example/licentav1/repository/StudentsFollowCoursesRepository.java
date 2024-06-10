@@ -25,4 +25,7 @@ public interface StudentsFollowCoursesRepository extends JpaRepository<StudentsF
 
     @Query(value = "SELECT * FROM students_follow_courses s WHERE s.id_student = :idStudent", nativeQuery = true)
     Optional<List<StudentsFollowCourses>> findAllByIdStudent(@Param("idStudent") UUID idStudent);
+
+    @Query(value = "SELECT * FROM students_follow_courses s WHERE s.id_student = :idUsers", nativeQuery = true)
+    List<StudentsFollowCourses> findAllCoursesByStudent(UUID idUsers);
 }
