@@ -93,8 +93,10 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
 
             // trim the studentAnswer of any leading or trailing whitespaces
             studentAnswer = studentAnswer.trim();
+            System.out.println("Student answer: " + studentAnswer);
             // trim the correctAnswer of any leading or trailing whitespaces
             correctAnswer = correctAnswer.trim();
+            System.out.println("Correct answer: " + correctAnswer);
 
             // compare the student answer with the correct answer
             int differences = compareAnswers(studentAnswer, correctAnswer);
@@ -138,6 +140,13 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
     public void deleteStudentAnswers(UUID idExam, UUID idStudent) {
         // find the student exam by idExam and idStudent
         StudentExam studentExam = studentExamRepository.findByIdStudentAndIdExam(idStudent, idExam).orElseThrow(() -> new RuntimeException("Student exam not found"));
+
+        System.out.println("Student exam: " + studentExam.getIdStudentExam());
+
+        //reset the score of the student exam and the exam status
+        studentExam.setScore(-1);
+        studentExam.setExamStatus(-1);
+
 
         // for each row that has the id of the student exam, delete the row
         studentAnswersExamRepository.deleteAll(studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam()));
@@ -409,6 +418,66 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         return questionAndStudentsAnswersDTOS;
+    }
+
+    @Override
+    public List<QuestionAndStudentsAnswersDTO> getMyAnswers(UUID idExam) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        System.out.println("id from token: " + idToken);
+
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new RuntimeException("Exam not found"));
+
+        //iau cursul examenului
+        Courses course = coursesRepository.findById(exam.getCourse().getIdCourses()).orElseThrow(() -> new RuntimeException("Course not found"));
+
+        // get the student exam by idExam and idStudent
+        StudentExam studentExam = studentExamRepository.findByIdStudentAndIdExam(idToken, idExam).orElseThrow(() -> new RuntimeException("Student exam not found"));
+
+        // get the list of student answers exams by student exam
+        List<StudentAnswersExam> studentAnswersExams = studentAnswersExamRepository.findAllByStudentExam(studentExam.getIdStudentExam());
+
+        // map the list of student answers exams to a list of student answers exam creation DTOs
+        List<QuestionAndStudentsAnswersDTO> questionAndStudentsAnswersDTOS = new ArrayList<>();
+        for (StudentAnswersExam studentAnswersExam : studentAnswersExams){
+            QuestionAndStudentsAnswersDTO questionAndStudentsAnswersDTO = new QuestionAndStudentsAnswersDTO();
+            QuestionsExam questionsExam = studentAnswersExam.getQuestionsExam();
+            if (questionsExam != null) {
+                Question question = questionsExam.getQuestion();
+                if (question != null) {
+                    questionAndStudentsAnswersDTO.setQuestionText(question.getQuestionText());
+                } else {
+                    System.out.println("Question is null for QuestionsExam with ID: " + questionsExam.getIdQuestionsExam());
+                }
+                //iau si raspuunsul corect
+                CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElseThrow(() -> new RuntimeException("Correct answers exam not found"));
+                questionAndStudentsAnswersDTO.setCorrectAnswer(correctAnswersExam.getCorrectAnswer());
+                //iau si scorul
+                questionAndStudentsAnswersDTO.setScore(correctAnswersExam.getScore());
+            } else {
+                System.out.println("QuestionsExam is null for StudentAnswersExam with ID: " + studentAnswersExam.getIdStudentAnswerExam());
+            }
+            questionAndStudentsAnswersDTO.setStudentAnswer(studentAnswersExam.getStudentAnswer());
+            questionAndStudentsAnswersDTOS.add(questionAndStudentsAnswersDTO);
+        }
+
+        return questionAndStudentsAnswersDTOS;
+
     }
 
 

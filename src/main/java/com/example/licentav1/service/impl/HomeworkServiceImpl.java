@@ -230,18 +230,26 @@ public class HomeworkServiceImpl implements HomeworkService {
             System.out.println(name);
             System.out.println("DELETE: " + homeworkFiles.getFileUrl());
             s3Service.deleteHomeworkFile(name);
+            // Get the Homework entity that references the HomeworkFiles
+            Homework homework = homeworkFiles.getHomework();
+
+            // Remove the association
+            homework.setHomeworkFiles(null);
+            homeworkRepository.save(homework);
+
+            // Now you can delete the HomeworkFiles
             homeworkFilesRepository.delete(homeworkFiles);
 
-            // daca nu mai exista niciun fisier pentru homework-ul respectiv, sterg si homework-ul si student-homework-ul
+            // If there are no more files for the respective homework, delete the homework and student-homework as well
+            if (homeworkFilesRepository.findAllByHomework(homework).isEmpty()) {
+                studentHomeworkRepository.deleteByHomework(homework);
 
-            if (homeworkFilesRepository.findAllByHomework(homeworkFiles.getHomework()).isEmpty()) {
-                studentHomeworkRepository.deleteByHomework(homeworkFiles.getHomework());
+                // Also delete it from feedback
+                feedbackRepository.deleteByHomework(homework.getIdHomework());
 
-                //trebuie sa o sterg si din feedback
-                feedbackRepository.deleteByHomework(homeworkFiles.getHomework().getIdHomework());
-
-                homeworkRepository.delete(homeworkFiles.getHomework());
-
+                homeworkRepository.delete(homework);
+            }else{
+                System.out.println("Homework has more files");
             }
 
         }else{
@@ -379,7 +387,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         String role = jwtService.extractRole(token);
         System.out.println("id from token: " + id);
 
-        Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
+        Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new NonAllowedException("Homework not found"));
         HomeworkAnnouncements homeworkAnnouncements = homework.getHomeworkAnnouncements();
         Lectures lecture = homeworkAnnouncements.getLectures();
         Courses course = lecture.getCourses();

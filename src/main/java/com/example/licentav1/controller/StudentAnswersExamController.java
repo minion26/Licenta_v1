@@ -68,5 +68,11 @@ public class StudentAnswersExamController {
         return studentAnswersExamService.getStudentsAnswers(idExam, idStudent);
     }
 
+    @GetMapping("/see-my-answer/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<QuestionAndStudentsAnswersDTO> getMyAnswers(@PathVariable UUID idExam) {
+        return studentAnswersExamService.getMyAnswers(idExam);
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package com.example.licentav1.service;
 
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.UserChangePasswordDTO;
 import com.example.licentav1.dto.UserEditDTO;
 import com.example.licentav1.dto.UsersDTO;
 
@@ -19,4 +20,6 @@ public interface UsersService {
     UsersDTO getUserByEmail(String email);
 
     Iterable<UsersDTO> getAdmins();
+
+    void changePassword(UserChangePasswordDTO userChangePasswordDTO);
 }

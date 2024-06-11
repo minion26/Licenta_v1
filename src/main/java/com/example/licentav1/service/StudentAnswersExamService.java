@@ -24,4 +24,6 @@ public interface StudentAnswersExamService {
     ReviewStudentAnswersDTO getStudentAnswerForReview(UUID idStudentAnswerExam);
 
     List<QuestionAndStudentsAnswersDTO> getStudentsAnswers(UUID idExam, UUID idStudent);
+
+    List<QuestionAndStudentsAnswersDTO> getMyAnswers(UUID idExam);
 }

@@ -32,6 +32,6 @@ public class QuestionsExam {
     private List<CorrectAnswersExam> correctAnswersExams;
 
 
-    @OneToOne(mappedBy = "questionsExam")
-    private StudentAnswersExam studentAnswersExam;
+    @OneToMany(mappedBy = "questionsExam")
+    private List<StudentAnswersExam> studentAnswersExam;
 }

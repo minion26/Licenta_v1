@@ -5,6 +5,7 @@ import com.example.licentav1.advice.exceptions.UserAlreadyExistsException;
 import com.example.licentav1.advice.exceptions.UserNotFoundException;
 import com.example.licentav1.domain.Roles;
 import com.example.licentav1.domain.Users;
+import com.example.licentav1.dto.UserChangePasswordDTO;
 import com.example.licentav1.dto.UserEditDTO;
 import com.example.licentav1.dto.UsersDTO;
 import com.example.licentav1.service.RolesService;
@@ -64,5 +65,11 @@ public class UsersController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUsers(@PathVariable(value="id") UUID id) throws LastAdminException, UserNotFoundException {
         usersService.deleteUsers(id);
+    }
+
+    @PostMapping("/changePassword")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(@RequestBody UserChangePasswordDTO userChangePasswordDTO) throws UserNotFoundException {
+        usersService.changePassword(userChangePasswordDTO);
     }
 }
