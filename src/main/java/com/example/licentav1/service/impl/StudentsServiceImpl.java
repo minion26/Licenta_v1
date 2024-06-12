@@ -113,7 +113,7 @@ public class StudentsServiceImpl implements StudentsService {
             System.out.println("Send email");
 
             //send email
-            emailService.sendInitialPassword(studentsCreationDTO.getFacultyEmail(), password);
+            emailService.sendInitialPasswordStyle(studentsCreationDTO.getFacultyEmail(), password);
         }catch (Exception e){
             System.out.printf("Error: %s", e.getMessage());
         }
@@ -187,6 +187,9 @@ public class StudentsServiceImpl implements StudentsService {
                 throw new StudentAlreadyExistsException("Student with this code already exists");
             }
             studentsRepository.save(students);
+            System.out.println("Send email");
+            //send email
+            emailService.sendInitialPasswordStyle(users.getFacultyEmail(), password);
         }
     }
 

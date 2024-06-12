@@ -108,7 +108,7 @@ public class UsersServiceImpl implements UsersService {
         usersRepository.save(users);
 
         System.out.println("Send email");
-        emailService.sendInitialPassword(users.getFacultyEmail(), password);
+        emailService.sendInitialPasswordStyle(users.getFacultyEmail(), password);
 
     }
 

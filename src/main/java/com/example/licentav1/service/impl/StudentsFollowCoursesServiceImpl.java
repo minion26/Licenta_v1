@@ -1,9 +1,6 @@
 package com.example.licentav1.service.impl;
 
-import com.example.licentav1.advice.exceptions.CourseNotFoundException;
-import com.example.licentav1.advice.exceptions.StudentCourseRelationNotFoundException;
-import com.example.licentav1.advice.exceptions.StudentNotFoundException;
-import com.example.licentav1.advice.exceptions.UserNotFoundException;
+import com.example.licentav1.advice.exceptions.*;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Students;
 import com.example.licentav1.domain.StudentsFollowCourses;
@@ -61,6 +58,18 @@ public class StudentsFollowCoursesServiceImpl implements StudentsFollowCoursesSe
 
             StudentsFollowCourses studentsFollowCourses = new StudentsFollowCourses(student.get(), course.get());
 
+            //verify if the student is already following the course
+            List<StudentsFollowCourses> studentsFollowCoursesList = studentsFollowCoursesRepository.findAll();
+            for (StudentsFollowCourses std : studentsFollowCoursesList) {
+                if (std.getStudent().getIdUsers().equals(student.get().getIdUsers()) && std.getCourse().getIdCourses().equals(course.get().getIdCourses())) {
+                    throw new NonAllowedException("Student-Course relation already exists");
+                }
+            }
+
+            //verify that the student is in the same academic year as the course
+            if (!student.get().getYearOfStudy().equals(course.get().getYear())) {
+                throw new NonAllowedException("Student is not in the same academic year as the course");
+            }
 
             try {
                 studentsFollowCoursesRepository.save(studentsFollowCourses);

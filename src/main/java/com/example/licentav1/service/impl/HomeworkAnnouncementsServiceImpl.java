@@ -5,15 +5,20 @@ import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.*;
 import com.example.licentav1.dto.HomeworkAnnouncementsCreationDTO;
 import com.example.licentav1.dto.HomeworkAnnouncementsDTO;
+import com.example.licentav1.email.EmailDetails;
+import com.example.licentav1.email.EmailService;
 import com.example.licentav1.mapper.HomeworkAnnouncementsMapper;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.HomeworkAnnouncementsService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,8 +34,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
     private final HttpServletRequest request;
     private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
     private final StudentsRepository studentsRepository;
+    private final UsersRepository usersRepository;
+    private final EmailService emailService;
 
-    public HomeworkAnnouncementsServiceImpl(HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, LecturesRepository lectureRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teachersRepository, JwtService jwtService, HttpServletRequest request, StudentsFollowCoursesRepository studentsFollowCoursesRepository, StudentsRepository studentsRepository) {
+    public HomeworkAnnouncementsServiceImpl(HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, LecturesRepository lectureRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teachersRepository, JwtService jwtService, HttpServletRequest request, StudentsFollowCoursesRepository studentsFollowCoursesRepository, StudentsRepository studentsRepository, UsersRepository usersRepository, EmailService emailService) {
         this.homeworkAnnouncementsRepository = homeworkAnnouncementsRepository;
         this.lectureRepository = lectureRepository;
         this.coursesRepository = coursesRepository;
@@ -40,6 +47,8 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         this.request = request;
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
         this.studentsRepository = studentsRepository;
+        this.usersRepository = usersRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -290,5 +299,44 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
 
         return HomeworkAnnouncementsMapper.toDTO(hA);
+    }
+
+
+
+//    @Scheduled(cron = "0 0 0 * * ?") // This will run the method every day at midnight
+    @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Bucharest")
+    public void sendHomeworkReminderEmails() {
+        try {
+            System.out.println("Sending homework reminder emails");
+
+            LocalDateTime tomorrow = LocalDateTime.now().plusDays(1);
+
+            // Get all homework announcements where the DueDate is tomorrow
+            List<HomeworkAnnouncements> homeworkDueTomorrow = homeworkAnnouncementsRepository.findAllByDueDate(tomorrow);
+
+            for (HomeworkAnnouncements homework : homeworkDueTomorrow) {
+                System.out.println("Homework due tomorrow: " + homework.getTitle());
+                // Get all students who are supposed to submit this homework
+                List<StudentsFollowCourses> studentsFollowCourses = studentsFollowCoursesRepository.findAllByCourse(homework.getLectures().getCourses().getIdCourses()).orElseThrow(() -> new StudentCourseRelationNotFoundException("Student-Course relation not found"));
+
+                List<Students> students = new ArrayList<>();
+                for (StudentsFollowCourses studentFollowCourse : studentsFollowCourses) {
+                    System.out.println("Student: " + studentFollowCourse.getStudent().getIdUsers());
+                    students.add(studentsRepository.findById(studentFollowCourse.getStudent().getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found")));
+                }
+
+                for (Students student : students) {
+                    Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+                    System.out.println("Sending email to: " + user.getFacultyEmail());
+                    System.out.println("Homework title: " + homework.getTitle());
+                    System.out.println("Course name: " + homework.getLectures().getCourses().getName());
+                    // Send the email
+                    emailService.sendReminderHomeworkStyle(user.getFacultyEmail(), homework.getTitle(), homework.getLectures().getCourses().getName());
+                }
+            }
+        }catch(Exception e){
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }

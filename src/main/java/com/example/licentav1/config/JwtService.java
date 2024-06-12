@@ -150,10 +150,10 @@ public class JwtService {
     }
 
     public String extractRole(String token) {
-        System.out.println("Extracting role from token"+ token);
+//        System.out.println("Extracting role from token"+ token);
         Claims claims = extractAllClaims(token);
         Integer roleId = claims.get("roleId", Integer.class);
-        System.out.println("Role id: " + roleId);
+//        System.out.println("Role id: " + roleId);
 
         // Convert roleId to role name
         String role  = switch (roleId) {
@@ -163,7 +163,7 @@ public class JwtService {
             default -> "UNKNOWN";
         };
 
-        System.out.println("Role: " + role);
+//        System.out.println("Role: " + role);
 
         return role;
     }

@@ -106,7 +106,7 @@ public class TeachersServiceImpl implements TeachersService {
             System.out.println("Send email");
 
             //send email
-            emailService.sendInitialPassword(teachersCreationDTO.getFacultyEmail(), password);
+            emailService.sendInitialPasswordStyle(teachersCreationDTO.getFacultyEmail(), password);
         }catch (Exception e){
             System.out.printf("Error: %s", e.getMessage());
         }
@@ -170,6 +170,10 @@ public class TeachersServiceImpl implements TeachersService {
             }
 
             teachersRepository.save(teachers);
+            System.out.println("Send email");
+
+            //send email
+            emailService.sendInitialPasswordStyle(users.getFacultyEmail(), password);
         }
     }
 
