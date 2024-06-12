@@ -99,19 +99,22 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
             System.out.println("Correct answer: " + correctAnswer);
 
             // compare the student answer with the correct answer
-            int differences = compareAnswers(studentAnswer, correctAnswer);
-            System.out.println("Differences: " + differences);
-            if (differences <= 2) {
+            if(studentAnswer.equals(correctAnswer)) {
                 score += correctAnswersExam.getScore();
-                System.out.println("E OK! Score: " + score);
-            }else{
-                // coloana needs_review din tabelul student_answers_exam va fi setata pe true
-                // si o sa apara in lista de raspunsuri care trebuie revizuite
-                studentAnswersExam.setNeedsReview(true);
-                studentAnswersExamRepository.save(studentAnswersExam);
+                System.out.println("OK! Score: " + score);
+            }else {
+                int differences = compareAnswers(studentAnswer, correctAnswer);
+                System.out.println("Differences: " + differences);
+                if (differences <= 2) {
+                    score += correctAnswersExam.getScore();
+                    System.out.println("E OK! Score: " + score);
+                } else {
+                    // coloana needs_review din tabelul student_answers_exam va fi setata pe true
+                    // si o sa apara in lista de raspunsuri care trebuie revizuite
+                    studentAnswersExam.setNeedsReview(true);
+                    studentAnswersExamRepository.save(studentAnswersExam);
+                }
             }
-
-
 
             // update the score of the student exam
             studentExam.setScore(score);
@@ -218,7 +221,7 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         //for each exam
         List<Exam> exams = examRepository.findAll();
         for (Exam exam : exams){
-            System.out.println("Exam: " + exam.getCourse().getName());
+//            System.out.println("Exam: " + exam.getCourse().getName());
             if (courseIds.contains(exam.getCourse().getIdCourses())) {
                 UUID idExam = exam.getIdExam();
 
@@ -269,21 +272,37 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         // set the needs review to false
         studentAnswersExam.setNeedsReview(false);
 
+        int passingScore = studentExam.getExam().getPassingScore();
+
         if (correctAnswersExamCreationDTO.getScore() != null) {
             // change the score of the student exam
-            int newScore = correctAnswersExamCreationDTO.getScore();
+            int newScoreFromTeacher = correctAnswersExamCreationDTO.getScore();
+            System.out.println("new score from teacher: " + newScoreFromTeacher);
 
             // get the correct answers exam
             CorrectAnswersExam correctAnswersExam = correctAnswersExamRepository.findByIdQuestionExam(studentAnswersExam.getQuestionsExam().getIdQuestionsExam()).orElseThrow(() -> new RuntimeException("Correct answers exam not found"));
 
-            // get the old score
-            int oldScore = correctAnswersExam.getScore();
+            System.out.println("correct answer: " + correctAnswersExam.getCorrectAnswer());
+
+            // get the score of the correct answer
+            int correctScore = correctAnswersExam.getScore();
+
+            System.out.println("correct score: " + correctScore);
 
             // update the score of the student exam
-            studentExam.setScore(studentExam.getScore() - oldScore + newScore);
+            int putNewScore = studentExam.getScore(); //scad scorul vechi
+            studentExam.setScore(studentExam.getScore() + newScoreFromTeacher);
+
+            if(studentExam.getScore() < passingScore){
+                studentExam.setExamStatus(0);
+            } else {
+                studentExam.setExamStatus(1);
+            }
+
         }
         // save the student exam
         studentExamRepository.save(studentExam);
+        System.out.println("new student exam score: " + studentExam.getScore());
 
         // save the student answer exam
         studentAnswersExamRepository.save(studentAnswersExam);

@@ -598,6 +598,8 @@ public class ExamServiceImpl implements ExamService {
     public boolean isExamStarted(UUID idExam) {
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
 
-        return exam.getHasStarted();
+
+        Boolean hasStarted = exam.getHasStarted();
+        return hasStarted != null && hasStarted;
     }
 }
