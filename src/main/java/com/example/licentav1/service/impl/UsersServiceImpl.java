@@ -10,6 +10,7 @@ import com.example.licentav1.domain.Users;
 import com.example.licentav1.dto.UserChangePasswordDTO;
 import com.example.licentav1.dto.UserEditDTO;
 import com.example.licentav1.dto.UsersDTO;
+import com.example.licentav1.email.EmailService;
 import com.example.licentav1.mapper.UsersMapper;
 import com.example.licentav1.repository.RolesRepository;
 import com.example.licentav1.repository.UsersRepository;
@@ -29,12 +30,14 @@ public class UsersServiceImpl implements UsersService {
     private final HttpServletRequest request;
 
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public UsersServiceImpl(UsersRepository usersRepository, JwtService jwtService, HttpServletRequest request, PasswordEncoder passwordEncoder) {
+    public UsersServiceImpl(UsersRepository usersRepository, JwtService jwtService, HttpServletRequest request, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.usersRepository = usersRepository;
         this.jwtService = jwtService;
         this.request = request;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
 
@@ -103,6 +106,9 @@ public class UsersServiceImpl implements UsersService {
 
         users.setPassword(passwordEncoder.encode(password));
         usersRepository.save(users);
+
+        System.out.println("Send email");
+        emailService.sendInitialPassword(users.getFacultyEmail(), password);
 
     }
 

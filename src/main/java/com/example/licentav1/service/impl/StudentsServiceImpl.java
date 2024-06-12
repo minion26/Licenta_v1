@@ -9,6 +9,7 @@ import com.example.licentav1.domain.Users;
 import com.example.licentav1.dto.StudentsCreationDTO;
 import com.example.licentav1.dto.StudentsDTO;
 import com.example.licentav1.dto.UsersDTO;
+import com.example.licentav1.email.EmailService;
 import com.example.licentav1.mapper.UsersMapper;
 import com.example.licentav1.mapper.StudentsMapper;
 import com.example.licentav1.repository.StudentsRepository;
@@ -30,12 +31,14 @@ public class StudentsServiceImpl implements StudentsService {
     private final StudentsRepository studentsRepository;
     private final UsersRepository usersRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
-    public StudentsServiceImpl(StudentsRepository studentsRepository, UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
+    public StudentsServiceImpl(StudentsRepository studentsRepository, UsersRepository usersRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.studentsRepository = studentsRepository;
         this.usersRepository = usersRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Override
@@ -78,10 +81,11 @@ public class StudentsServiceImpl implements StudentsService {
 
         Users users;
         UUID idUser = null;
+        String password = null;
 
         try{
             users = UsersMapper.fromStudentCreationDTO(studentsCreationDTO);
-            String password = UUID.randomUUID().toString().substring(0, 8);
+            password = UUID.randomUUID().toString().substring(0, 8);
             System.out.println("Password: " + password);
             users.setPassword(passwordEncoder.encode(password));
             if (usersRepository.existsByFacultyEmail(users.getFacultyEmail())) {
@@ -106,6 +110,10 @@ public class StudentsServiceImpl implements StudentsService {
                             .build();
 
             studentsRepository.save(students);
+            System.out.println("Send email");
+
+            //send email
+            emailService.sendInitialPassword(studentsCreationDTO.getFacultyEmail(), password);
         }catch (Exception e){
             System.out.printf("Error: %s", e.getMessage());
         }
