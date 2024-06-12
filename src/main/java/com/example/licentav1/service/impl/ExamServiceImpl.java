@@ -72,7 +72,7 @@ public class ExamServiceImpl implements ExamService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -84,9 +84,10 @@ public class ExamServiceImpl implements ExamService {
 
         if(didactic == null) {
             throw new NonAllowedException("You are not allowed to create this exam");
-        }else{
-            System.out.println("You are allowed to create this exam");
         }
+//        else{
+//            System.out.println("You are allowed to create this exam");
+//        }
 
         //gasesc profesorii pentru a asocia examenul
         List<Teachers> teachers = new ArrayList<>();
@@ -237,7 +238,7 @@ public class ExamServiceImpl implements ExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
         Courses courseExam = exam.getCourse();
@@ -247,10 +248,11 @@ public class ExamServiceImpl implements ExamService {
         //acum am proful, cursul si curs-prof din didactic
         if(didactic == null){
             throw new NonAllowedException("You are not allowed to update this exam");
-        }else{
-            System.out.println("You are allowed to update this exam");
-
         }
+//        else{
+//            System.out.println("You are allowed to update this exam");
+//
+//        }
 
 //        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
 
@@ -321,7 +323,7 @@ public class ExamServiceImpl implements ExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -334,9 +336,10 @@ public class ExamServiceImpl implements ExamService {
 
         if (didactic == null) {
             throw new NonAllowedException("You are not allowed to see this course");
-        } else {
-            System.out.println("You are allowed to see this course");
         }
+//        else {
+//            System.out.println("You are allowed to see this course");
+//        }
 
 
         List<Exam> exams = examRepository.findAllByCourses(idCourse).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
@@ -410,7 +413,7 @@ public class ExamServiceImpl implements ExamService {
 
         UUID id = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
 
@@ -425,9 +428,10 @@ public class ExamServiceImpl implements ExamService {
 
             if(didactic == null) {
                 throw new NonAllowedException("You are not allowed to see this exam");
-            }else{
-                System.out.println("You are allowed to see this exam");
             }
+//            else{
+//                System.out.println("You are allowed to see this exam");
+//            }
         }else if(role.equals("STUDENT")){
             //am studentul care a facut request-ul
             Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
@@ -437,9 +441,10 @@ public class ExamServiceImpl implements ExamService {
 
             if(studentExam == null) {
                 throw new NonAllowedException("You are not allowed to see this exam");
-            }else{
-                System.out.println("You are allowed to see this exam");
             }
+//            else{
+//                System.out.println("You are allowed to see this exam");
+//            }
         }
 
 
@@ -510,7 +515,7 @@ public class ExamServiceImpl implements ExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -524,9 +529,10 @@ public class ExamServiceImpl implements ExamService {
 
         if(didactic == null) {
             throw new NonAllowedException("You are not allowed to see this exam");
-        }else{
-            System.out.println("You are allowed to see this exam");
         }
+//        else{
+//            System.out.println("You are allowed to see this exam");
+//        }
 
         List<StudentExam> studentExams = studentExamRepository.findAllStudentsByExam(exam.getIdExam());
         List<StudentExamFrontDTO> studentExamFrontDTOS = new ArrayList<>();

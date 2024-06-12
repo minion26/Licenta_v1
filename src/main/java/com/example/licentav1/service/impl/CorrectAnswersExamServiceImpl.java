@@ -59,7 +59,7 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -79,9 +79,10 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
         // Check if a correct answer already exists for the given question
         CorrectAnswersExam existingCorrectAnswer = correctAnswersExamRepository.findByIdQuestionExam(questionsExam.getIdQuestionsExam()).orElse(null);
@@ -114,7 +115,7 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -128,9 +129,10 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
         //List<Question> questions = questionRepository.findAllByExam(exam);
 
@@ -208,7 +210,7 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -229,9 +231,10 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
 
         // Update the correct answer
@@ -263,7 +266,7 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -277,9 +280,10 @@ public class CorrectAnswersExamServiceImpl implements CorrectAnswersExamService 
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
         mapOfCorrectAnswersExamCreationDTO.forEach((idQuestion, correctAnswersExamCreationDTO) -> {
             QuestionsExam questionsExam = questionsExamRepository.findByIdQuestion(idQuestion).orElseThrow(() -> new QuestionsExamNotFoundException("QuestionsExam not found"));

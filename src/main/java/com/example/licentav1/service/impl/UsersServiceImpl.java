@@ -70,13 +70,13 @@ public class UsersServiceImpl implements UsersService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
 
         Users user = usersRepository.findById(idToken).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        System.out.println("Old password: " + userChangePasswordDTO.getOldPassword());
-        System.out.println("New password: " + userChangePasswordDTO.getNewPassword());
-        System.out.println("Confirm password: " + userChangePasswordDTO.getConfirmPassword());
+//        System.out.println("Old password: " + userChangePasswordDTO.getOldPassword());
+//        System.out.println("New password: " + userChangePasswordDTO.getNewPassword());
+//        System.out.println("Confirm password: " + userChangePasswordDTO.getConfirmPassword());
 
         if (!passwordEncoder.matches(userChangePasswordDTO.getOldPassword(), user.getPassword())) {
             throw new NonAllowedException("Old password is incorrect");

@@ -94,7 +94,7 @@ public class StudentExamServiceImpl implements StudentExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -112,9 +112,10 @@ public class StudentExamServiceImpl implements StudentExamService {
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
         while ((line = br.readLine()) != null) {
             String[] data = line.split(",");
@@ -192,7 +193,7 @@ public class StudentExamServiceImpl implements StudentExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -209,9 +210,10 @@ public class StudentExamServiceImpl implements StudentExamService {
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
         Students student = studentsRepository.findById(studentExam.getStudent().getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
         Users users = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new StudentNotFoundException("Student not found"));
@@ -245,7 +247,7 @@ public class StudentExamServiceImpl implements StudentExamService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
 
 

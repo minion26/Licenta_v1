@@ -204,7 +204,7 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
         Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         // Get the list of didactics for the teacher
@@ -308,7 +308,7 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
         Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         // Get the list of didactics for the teacher
@@ -369,7 +369,7 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
         Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new RuntimeException("Exam not found"));
@@ -381,9 +381,10 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
 
         if (didactic == null) {
             throw new NonAllowedException("Teacher does not teach the course of the exam");
-        }else{
-            System.out.println("Teacher teaches the course of the exam");
         }
+//        else{
+//            System.out.println("Teacher teaches the course of the exam");
+//        }
 
 
 
@@ -439,7 +440,7 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
 
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new RuntimeException("Exam not found"));
 

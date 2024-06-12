@@ -143,7 +143,7 @@ public class LecturesServiceImpl implements LecturesService {
 
         UUID idToken = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
 
         Lectures lecture = lecturesRepository.findById(idLecture).orElseThrow(() -> new CourseNotFoundException("Lecture not found"));
         Courses course = coursesRepository.findById(lecture.getCourses().getIdCourses()).orElseThrow(() -> new CourseNotFoundException("Course not found"));
@@ -156,9 +156,10 @@ public class LecturesServiceImpl implements LecturesService {
 
             if(didactic == null) {
                 throw new NonAllowedException("You are not allowed to see this course");
-            }else{
-                System.out.println("You are allowed to see this course");
             }
+//            else{
+//                System.out.println("You are allowed to see this course");
+//            }
         }else if(role.equals("STUDENT")){
             Students studentFromJwt = studentsRepository.findById(idToken).orElseThrow(() -> new StudentNotFoundException("Student not found"));
 
@@ -197,7 +198,7 @@ public class LecturesServiceImpl implements LecturesService {
 
         UUID idToken = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
 
         Courses course = coursesRepository.findById(idCourses).orElseThrow(()-> new CourseNotFoundException("Course not found"));
 
@@ -210,9 +211,10 @@ public class LecturesServiceImpl implements LecturesService {
 
             if (didactic == null) {
                 throw new NonAllowedException("You are not allowed to see this course");
-            }else{
-                System.out.println("You are allowed to see this course");
             }
+//            else{
+//                System.out.println("You are allowed to see this course");
+//            }
         }else if (role.equals("STUDENT")){
             //verific daca studentul este inscris la cursul respectiv
             Students studentFromJwt = studentsRepository.findById(idToken).orElseThrow(() -> new StudentNotFoundException("Student not found"));
@@ -221,9 +223,10 @@ public class LecturesServiceImpl implements LecturesService {
 
             if (studentsFollowCourses == null) {
                 throw new NonAllowedException("You are not allowed to see this course");
-            }else{
-                System.out.println("You are allowed to see this course");
             }
+//            else{
+//                System.out.println("You are allowed to see this course");
+//            }
         }else{
             //inseamna ca e admin
             throw new NonAllowedException("You are not allowed to see this course");

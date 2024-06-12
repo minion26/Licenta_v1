@@ -64,7 +64,7 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -77,9 +77,10 @@ public class QuestionServiceImpl implements QuestionService {
 
         if(didactic == null) {
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
 
         List<CorrectAnswersExam> correctAnswers = new ArrayList<>();
@@ -142,7 +143,7 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         //am profesorul care a facut request-ul
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
@@ -156,9 +157,10 @@ public class QuestionServiceImpl implements QuestionService {
         Didactic didactic = didacticRepository.findByTeacherAndCourse(teacherFromJwt.getIdUsers(), course.getIdCourses()).orElse(null);
         if(didactic == null){
             throw new NonAllowedException("Teacher does not teach this course");
-        }else{
-            System.out.println("Teacher teaches this course");
         }
+//        else{
+//            System.out.println("Teacher teaches this course");
+//        }
 
         //pentru fiecare intrebare
         for(QuestionDTO questionDTO : questionsDTO){

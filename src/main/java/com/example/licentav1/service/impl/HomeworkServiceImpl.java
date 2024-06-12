@@ -302,7 +302,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
 
@@ -318,9 +318,10 @@ public class HomeworkServiceImpl implements HomeworkService {
 
         if (didactic == null) {
             throw new NonAllowedException("You are not allowed to see the submissions for this course");
-        }else{
-            System.out.println("You are allowed to see this course");
         }
+//        else{
+//            System.out.println("You are allowed to see this course");
+//        }
 
         // am lista de studenti care au incarcat tema
         List<StudentHomework> studentHomeworkList = studentHomeworkRepository.findAllByIdHomeworkAnnouncement(idHomeworkAnnouncement);
@@ -385,7 +386,7 @@ public class HomeworkServiceImpl implements HomeworkService {
 
         UUID id = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new NonAllowedException("Homework not found"));
         HomeworkAnnouncements homeworkAnnouncements = homework.getHomeworkAnnouncements();
@@ -399,9 +400,10 @@ public class HomeworkServiceImpl implements HomeworkService {
 
             if (didactic == null) {
                 throw new NonAllowedException("You are not allowed to see the submissions for this course");
-            }else{
-                System.out.println("You are allowed to see this course");
             }
+//            else{
+//                System.out.println("You are allowed to see this course");
+//            }
 
         }else if(role.equals("STUDENT")){
             Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new RuntimeException("Student not found"));
@@ -410,9 +412,10 @@ public class HomeworkServiceImpl implements HomeworkService {
 
             if (studentsFollowCourses == null) {
                 throw new NonAllowedException("You are not allowed to upload the homework for this course");
-            }else{
-                System.out.println("You are allowed to upload the homework for this course");
             }
+//            else{
+//                System.out.println("You are allowed to upload the homework for this course");
+//            }
         }
 
 
@@ -518,7 +521,7 @@ public class HomeworkServiceImpl implements HomeworkService {
 
         UUID id = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         Homework homework = homeworkRepository.findById(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
         HomeworkAnnouncements homeworkAnnouncements = homework.getHomeworkAnnouncements();
@@ -532,9 +535,10 @@ public class HomeworkServiceImpl implements HomeworkService {
 
             if (studentsFollowCourses == null) {
                 throw new NonAllowedException("You are not allowed to upload the homework for this course");
-            }else{
-                System.out.println("You are allowed to upload the homework for this course");
             }
+//            else{
+//                System.out.println("You are allowed to upload the homework for this course");
+//            }
         }
 
 

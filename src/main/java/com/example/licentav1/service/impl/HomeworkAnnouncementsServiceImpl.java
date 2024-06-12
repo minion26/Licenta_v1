@@ -61,7 +61,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         //get the lecture
@@ -84,9 +84,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         //verify if the teacher is one of the owner of the course
         if (!teacher.getCourses().contains(course)) {
             throw new NonAllowedException("Teacher is not the owner of the course!");
-        } else {
-            System.out.println("Teacher is the owner of the course!");
         }
+//        else {
+//            System.out.println("Teacher is the owner of the course!");
+//        }
 
         //create the homework announcement
         HomeworkAnnouncements homeworkAnnouncements = HomeworkAnnouncementsMapper.fromDTO(homeworkAnnouncementsCreationDTO, lecture);
@@ -115,8 +116,8 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
         UUID id = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + id);
-        System.out.println("AICI: " + role);
+//        System.out.println("id from token: " + id);
+//        System.out.println("AICI: " + role);
 
         //get the lecture
         Lectures lecture = lectureRepository.findById(idLecture).orElseThrow(() -> new LectureNotFoundException("Lecture not found!"));
@@ -133,9 +134,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
             if(didactic == null) {
                 throw new NonAllowedException("You are not allowed to see this homework announcement!");
-            } else {
-                System.out.println("You are allowed to see this homework announcement!");
             }
+//            else {
+//                System.out.println("You are allowed to see this homework announcement!");
+//            }
         }else if(role.equals("STUDENT")){
             Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
 
@@ -143,9 +145,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
             if(studentsFollowCourses == null) {
                 throw new NonAllowedException("You are not allowed to see this homework announcement!");
-            }else{
-                System.out.println("You are allowed to see this homework announcement!");
             }
+//            else{
+//                System.out.println("You are allowed to see this homework announcement!");
+//            }
         }
 
         //get all the homework announcements for the lecture
@@ -184,7 +187,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Teachers teacherFromJwt = teachersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         //get the homework announcement
@@ -201,9 +204,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
         if (didactic == null) {
             throw new NonAllowedException("You are not allowed to update this homework announcement!");
-        } else {
-            System.out.println("You are allowed to update this homework announcement!");
         }
+//        else {
+//            System.out.println("You are allowed to update this homework announcement!");
+//        }
 
         //update the homework announcement
         if (homeworkAnnouncementsDTO.getTitle() != null) {
@@ -246,7 +250,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
         UUID id = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
 
         HomeworkAnnouncements hA = homeworkAnnouncementsRepository.findById(idHomeworkAnnouncement).orElseThrow(() -> new LectureNotFoundException("Homework announcement not found!"));
 
@@ -264,9 +268,10 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
             if (didactic == null) {
                 throw new NonAllowedException("You are not allowed to see this homework announcement!");
-            } else {
-                System.out.println("You are allowed to see this homework announcement!");
             }
+//            else {
+//                System.out.println("You are allowed to see this homework announcement!");
+//            }
         }else if(role.equals("STUDENT")){
             Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
 

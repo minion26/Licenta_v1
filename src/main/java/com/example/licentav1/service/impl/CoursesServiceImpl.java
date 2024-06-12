@@ -86,7 +86,7 @@ public class CoursesServiceImpl implements CoursesService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Teachers teacherFromJwt = teacherRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
 
@@ -123,7 +123,7 @@ public class CoursesServiceImpl implements CoursesService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Teachers teacherFromJwt = teacherRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
 
@@ -134,9 +134,10 @@ public class CoursesServiceImpl implements CoursesService {
 
         if (didactics == null) {
             throw new NonAllowedException("You are not allowed to see this course");
-        }else{
-            System.out.println("Profu preda la cursul respectiv");
         }
+//        else{
+//            System.out.println("Profu preda la cursul respectiv");
+//        }
 
         List<Didactic> didacticList = didacticRepository.findAllByIdCourse(idCourse).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
@@ -171,7 +172,7 @@ public class CoursesServiceImpl implements CoursesService {
         }
 
         UUID id = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + id);
+//        System.out.println("id from token: " + id);
         Users userFromJwt = usersRepository.findById(id).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         //studentul cu id din params

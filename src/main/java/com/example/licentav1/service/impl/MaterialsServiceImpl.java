@@ -70,7 +70,7 @@ public class MaterialsServiceImpl implements MaterialsService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
         Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
@@ -83,9 +83,10 @@ public class MaterialsServiceImpl implements MaterialsService {
 
         if(didactic == null) {
             throw new NonAllowedException("You are not allowed to see upload to this course");
-        }else{
-            System.out.println("You are allowed to see this course");
         }
+//        else{
+//            System.out.println("You are allowed to see this course");
+//        }
 
 
         for (MultipartFile f : file){
@@ -283,7 +284,7 @@ public class MaterialsServiceImpl implements MaterialsService {
 
         UUID idToken = jwtService.getUserIdFromToken(token);
         String role = jwtService.extractRole(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
 
         List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
         Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
@@ -298,9 +299,10 @@ public class MaterialsServiceImpl implements MaterialsService {
 
             if(didactic == null) {
                 throw new NonAllowedException("You are not allowed to see this material");
-            }else{
-                System.out.println("You are allowed to see this course");
             }
+//            else{
+//                System.out.println("You are allowed to see this course");
+//            }
 
         }else if(role.equals("STUDENT")){
             Students studentFromJwt = studentRepository.findById(idToken).orElseThrow(() -> new StudentNotFoundException("Student not found"));
@@ -308,9 +310,10 @@ public class MaterialsServiceImpl implements MaterialsService {
             StudentsFollowCourses studentsFollowCourses = studentsFollowCoursesRepository.findByStudentAndCourse(studentFromJwt.getIdUsers(), lectures.getCourses().getIdCourses()).orElse(null);
             if(studentsFollowCourses == null) {
                 throw new NonAllowedException("You are not allowed to see this material");
-            }else{
-                System.out.println("You are allowed to see this course");
             }
+//            else{
+//                System.out.println("You are allowed to see this course");
+//            }
         }else{
             throw new NonAllowedException("You are not allowed to see this material");
         }
@@ -403,7 +406,7 @@ public class MaterialsServiceImpl implements MaterialsService {
         }
 
         UUID idToken = jwtService.getUserIdFromToken(token);
-        System.out.println("id from token: " + idToken);
+//        System.out.println("id from token: " + idToken);
         Teachers teacherFromJwt = teacherRepository.findById(idToken).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
 
         // Verificați dacă cursul există
@@ -417,9 +420,10 @@ public class MaterialsServiceImpl implements MaterialsService {
 
         if(didactic == null) {
             throw new NonAllowedException("You are not allowed to see this material");
-        } else {
-            System.out.println("You are allowed to see this course");
         }
+//        else {
+//            System.out.println("You are allowed to see this course");
+//        }
 
         List<MaterialsInfoDTO> materialsInfoDTOS = new ArrayList<>();
         if (lecture != null) {
