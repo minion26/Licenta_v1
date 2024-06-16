@@ -1,0 +1,2 @@
+ALTER TABLE exam ADD COLUMN
+start_time TIMESTAMP;

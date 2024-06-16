@@ -68,4 +68,7 @@ public class Exam {
 
     @Column(name="has_started")
     private Boolean hasStarted;
+
+    @Column(name="start_time")
+    private LocalDateTime startTime;
 }

@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +60,18 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
         StudentExam studentExam = studentExamRepository.findById(studentAnswersExamCreationDTO.getIdStudentExam()).orElseThrow(() -> new RuntimeException("Student exam not found"));
 
         UUID idExam = studentExam.getExam().getIdExam();
+
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new RuntimeException("Exam not found"));
+
+        if (exam.getStartTime() != null &&
+                Duration.between(exam.getStartTime(), LocalDateTime.now()).toMinutes() > exam.getTimeInMinutes()) {
+            // examenul a expirat, nu mai sunt acceptate raspunsuri
+            //sa pun ca studentul are 0 puncte si statusul examenului este 0
+            studentExam.setScore(0);
+            studentExam.setExamStatus(0);
+            studentExamRepository.save(studentExam);
+            throw new NonAllowedException("The exam has ended. Answers are no longer accepted.");
+        }
 
         UUID idStudent = studentExam.getStudent().getIdUsers();
 

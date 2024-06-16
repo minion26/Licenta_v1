@@ -590,7 +590,7 @@ public class ExamServiceImpl implements ExamService {
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
 
         exam.setHasStarted(true);
-
+        exam.setStartTime(java.time.LocalDateTime.now());
         examRepository.save(exam);
     }
 
