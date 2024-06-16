@@ -153,6 +153,33 @@ public class DidacticServiceImpl implements DidacticService {
 
     }
 
+    @Override
+    public List<DidacticDTO> getDidacticByTeacher(UUID idTeacher) {
+        Teachers teacher = teacherRepository.findById(idTeacher).orElseThrow(() -> new TeacherNotFoundException("Teacher not found"));
+
+        return didacticRepository.findAllByIdTeachers(idTeacher).orElse(Collections.emptyList()).stream()
+                .map(didactic -> {
+                    DidacticDTO dto = new DidacticDTO();
+
+                    dto.setIdDidactic(didactic.getIdDidactic());
+
+                    Courses course = coursesRepository.findById(didactic.getCourses().getIdCourses()).orElse(null);
+
+                    if (teacher != null) {
+                        Users user = usersRepository.findById(teacher.getIdUsers()).orElse(null);
+
+                        if (user != null) {
+                            dto.setTeacherName(user.getFirstName() + " " + user.getLastName());
+                        }
+                    }
+
+                    if (course != null) {
+                        dto.setCourseName(course.getName());
+                    }
+                    return dto;
+                }).collect(Collectors.toList());
+    }
+
 
     @Override
     public void deleteDidactic(UUID id) throws DidacticRelationNotFoundException {

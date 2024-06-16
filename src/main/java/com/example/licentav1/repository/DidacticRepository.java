@@ -29,4 +29,7 @@ public interface DidacticRepository extends JpaRepository<Didactic, UUID> {
 
     @Query(value="SELECT * FROM didactic WHERE id_courses = :idCourse AND id_teacher = :idUsers", nativeQuery = true)
     Optional<Didactic> findByTeacherAndCourse(@Param("idUsers") UUID idUsers,@Param("idCourse") UUID idCourses);
+
+    @Query(value="SELECT * FROM didactic WHERE id_teacher = :idTeacher", nativeQuery = true)
+    Optional<List<Didactic>> findAllByIdTeachers(UUID idTeacher);
 }

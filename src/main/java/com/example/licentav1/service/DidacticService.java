@@ -19,4 +19,6 @@ public interface DidacticService {
     void updateDidactic(UUID id, DidacticDTO didacticDTO);
 
     List<DidacticDTO> getDidacticByCourse(UUID idCourse);
+
+    List<DidacticDTO> getDidacticByTeacher(UUID idTeacher);
 }
