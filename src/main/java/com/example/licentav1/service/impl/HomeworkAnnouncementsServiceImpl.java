@@ -36,8 +36,9 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
     private final StudentsRepository studentsRepository;
     private final UsersRepository usersRepository;
     private final EmailService emailService;
+    private final StudentHomeworkRepository studentHomeworkRepository;
 
-    public HomeworkAnnouncementsServiceImpl(HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, LecturesRepository lectureRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teachersRepository, JwtService jwtService, HttpServletRequest request, StudentsFollowCoursesRepository studentsFollowCoursesRepository, StudentsRepository studentsRepository, UsersRepository usersRepository, EmailService emailService) {
+    public HomeworkAnnouncementsServiceImpl(HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, LecturesRepository lectureRepository, CoursesRepository coursesRepository, DidacticRepository didacticRepository, TeachersRepository teachersRepository, JwtService jwtService, HttpServletRequest request, StudentsFollowCoursesRepository studentsFollowCoursesRepository, StudentsRepository studentsRepository, UsersRepository usersRepository, EmailService emailService, StudentHomeworkRepository studentHomeworkRepository) {
         this.homeworkAnnouncementsRepository = homeworkAnnouncementsRepository;
         this.lectureRepository = lectureRepository;
         this.coursesRepository = coursesRepository;
@@ -49,6 +50,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
         this.studentsRepository = studentsRepository;
         this.usersRepository = usersRepository;
         this.emailService = emailService;
+        this.studentHomeworkRepository = studentHomeworkRepository;
     }
 
     @Override
@@ -328,11 +330,18 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
                 for (Students student : students) {
                     Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-                    System.out.println("Sending email to: " + user.getFacultyEmail());
-                    System.out.println("Homework title: " + homework.getTitle());
-                    System.out.println("Course name: " + homework.getLectures().getCourses().getName());
-                    // Send the email
-                    emailService.sendReminderHomeworkStyle(user.getFacultyEmail(), homework.getTitle(), homework.getLectures().getCourses().getName());
+                    //verific daca acest user a trimis deja homework-ul
+                    StudentHomework studentHomework = studentHomeworkRepository.findByIdStudentAndIdHomeworkAnnouncement(student.getIdUsers(), homework.getIdHomeworkAnnouncements()).orElse(null);
+                    if(studentHomework != null){
+                        System.out.println("Student already submitted homework");
+                    }else{
+                        System.out.println("Sending email to: " + user.getFacultyEmail());
+                        System.out.println("Homework title: " + homework.getTitle());
+                        System.out.println("Course name: " + homework.getLectures().getCourses().getName());
+                        // Send the email
+                        emailService.sendReminderHomeworkStyle(user.getFacultyEmail(), homework.getTitle(), homework.getLectures().getCourses().getName());
+                    }
+
                 }
             }
         }catch(Exception e){

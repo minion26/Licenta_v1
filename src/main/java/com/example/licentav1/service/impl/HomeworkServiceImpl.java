@@ -7,6 +7,7 @@ import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
 import com.example.licentav1.config.JwtService;
 import com.example.licentav1.dto.HomeworkDTO;
 import com.example.licentav1.dto.HomeworkGradeDTO;
+import com.example.licentav1.email.EmailService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.Resource;
@@ -49,8 +50,9 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final DidacticRepository didacticRepository;
     private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
     private final FeedbackRepository feedbackRepository;
+    private final EmailService emailService;
 
-    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, FeedbackRepository feedbackRepository) {
+    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, FeedbackRepository feedbackRepository, EmailService emailService) {
         this.homeworkRepository = homeworkRepository;
         this.studentHomeworkRepository = studentHomeworkRepository;
         this.homeworkFilesRepository = homeworkFilesRepository;
@@ -64,6 +66,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         this.didacticRepository = didacticRepository;
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
         this.feedbackRepository = feedbackRepository;
+        this.emailService = emailService;
     }
 
 
@@ -364,6 +367,15 @@ public class HomeworkServiceImpl implements HomeworkService {
 
         homework.setGrade(homeworkGradeDTO.getGrade());
         homeworkRepository.save(homework);
+
+        //sa trimit email studentului ca tema a fost corectata
+        StudentHomework studentHomework = studentHomeworkRepository.findByIdHomework(idHomework).orElseThrow(() -> new RuntimeException("Student homework not found"));
+        //iau studentul
+        Students student = studentHomework.getStudent();
+        //iau userul
+        Users user = usersRepository.findById(student.getIdUsers()).orElseThrow(() -> new RuntimeException("User not found"));
+        //trimitem email
+        emailService.sendGradeHomeworkStyle(user.getFacultyEmail(), homework.getHomeworkAnnouncements().getTitle(), homework.getHomeworkAnnouncements().getLectures().getCourses().getName(), homework.getGrade());
     }
 
     @Override

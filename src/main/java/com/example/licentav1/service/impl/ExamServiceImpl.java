@@ -589,6 +589,10 @@ public class ExamServiceImpl implements ExamService {
     public void startExam(UUID idExam) {
         Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
 
+        //if today is the day of the exam , can click
+        if(java.time.LocalDateTime.now().isBefore(exam.getDate())){
+            throw new NonAllowedException("You are not allowed to start this exam yet");
+        }
         exam.setHasStarted(true);
         exam.setStartTime(java.time.LocalDateTime.now());
         examRepository.save(exam);
