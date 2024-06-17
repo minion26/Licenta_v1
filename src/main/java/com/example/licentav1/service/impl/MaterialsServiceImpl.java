@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
 import com.example.licentav1.AWS.S3Service;
 import com.example.licentav1.advice.exceptions.*;
 import com.example.licentav1.config.JwtService;
@@ -17,13 +18,14 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @Service
 public class MaterialsServiceImpl implements MaterialsService {
@@ -136,7 +138,27 @@ public class MaterialsServiceImpl implements MaterialsService {
             throw new FileNotFoundException("File not found: " + fileName);
         }
 
-        return s3Object;
+        byte[] content;
+        try (S3ObjectInputStream stream = s3Object.getObjectContent()) {
+            // Read the entire input stream to ensure all bytes are read
+            content = IOUtils.toByteArray(stream);
+            System.out.println("Content: " + Arrays.toString(content));
+        } catch (IOException e) {
+            throw new IOException("Error while reading file: " + e.getMessage());
+        }
+
+        // Create a new InputStream from the byte array
+        InputStream is = new ByteArrayInputStream(content);
+
+        // Create a new S3Object using the new InputStream
+        S3Object newS3Object = new S3Object();
+        newS3Object.setObjectContent(is);
+        newS3Object.setBucketName(s3Object.getBucketName());
+        newS3Object.setKey(s3Object.getKey());
+
+        return newS3Object;
+
+//        return s3Object;
     }
 
     @Override
@@ -150,7 +172,17 @@ public class MaterialsServiceImpl implements MaterialsService {
             // Load file as Resource
             S3Object s3Object = this.loadFileAsResource(fileName);
 
-            Resource resource = new InputStreamResource(s3Object.getObjectContent());
+            // Get the byte array from the S3Object
+            byte[] content;
+            try (S3ObjectInputStream stream = s3Object.getObjectContent()) {
+                content = IOUtils.toByteArray(stream);
+            }
+
+            // Create a new InputStream from the byte array
+            InputStream is = new ByteArrayInputStream(content);
+
+            // Create a new Resource from the InputStream
+            Resource resource = new InputStreamResource(is);
 
             // Extract file extension
             String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1);
@@ -198,9 +230,11 @@ public class MaterialsServiceImpl implements MaterialsService {
             // Get S3Object metadata
             ObjectMetadata metadata = s3Object.getObjectMetadata();
 
+            String encodedFilename = URLEncoder.encode(resource.getFilename(), StandardCharsets.UTF_8);
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.setContentDisposition(ContentDisposition.attachment().filename(resource.getFilename()).build());
+            headers.setContentDisposition(ContentDisposition.attachment().filename(encodedFilename).build());
             headers.setContentLength(metadata.getContentLength());
             headers.setCacheControl(CacheControl.noCache().getHeaderValue());
 
@@ -335,9 +369,19 @@ public class MaterialsServiceImpl implements MaterialsService {
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> getFile(String key) {
+    public ResponseEntity<InputStreamResource> getFile(String key) throws IOException {
         S3Object s3Object = s3Service.getObject(key);
-        InputStreamResource resource = new InputStreamResource(s3Object.getObjectContent());
+        // Get the byte array from the S3Object
+        byte[] content;
+        try (S3ObjectInputStream stream = s3Object.getObjectContent()) {
+            content = IOUtils.toByteArray(stream);
+        }
+
+        // Create a new InputStream from the byte array
+        InputStream is = new ByteArrayInputStream(content);
+
+        // Create a new Resource from the InputStream
+        InputStreamResource resource = new InputStreamResource(is);
         // Extract file extension
         String fileExtension = key.substring(key.lastIndexOf(".") + 1);
 
@@ -381,9 +425,11 @@ public class MaterialsServiceImpl implements MaterialsService {
             contentType = "application/json";
         }
 
+        String encodedFilename = URLEncoder.encode(key, StandardCharsets.UTF_8);
+
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFilename)
                 .body(resource);
     }
 

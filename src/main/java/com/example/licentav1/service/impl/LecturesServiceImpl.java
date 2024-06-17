@@ -239,6 +239,15 @@ public class LecturesServiceImpl implements LecturesService {
         for (Lectures lecture : lectures) {
             lecturesDTO.add(LecturesMapper.toDTO(lecture, course));
         }
+
+        //order lectures by week
+        lecturesDTO.sort((o1, o2) -> {
+            if (o1.getWeek() == null || o2.getWeek() == null) {
+                return 0;
+            }
+            return o1.getWeek().compareTo(o2.getWeek());
+        });
+
         return lecturesDTO;
     }
 

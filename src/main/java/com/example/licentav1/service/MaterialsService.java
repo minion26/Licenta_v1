@@ -30,7 +30,7 @@ public interface MaterialsService {
     List<S3ObjectSummary> listFilesByType(UUID id, String type);
 
 
-    ResponseEntity<InputStreamResource> getFile(String key);
+    ResponseEntity<InputStreamResource> getFile(String key) throws IOException;
 
     List<MaterialsInfoDTO> getMaterialsByIdLectures(UUID id);
 }

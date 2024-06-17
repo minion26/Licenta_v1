@@ -76,7 +76,7 @@ public class MaterialsController {
 
     @GetMapping("/list/{key}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<InputStreamResource> getFile(@PathVariable String key) {
+    public ResponseEntity<InputStreamResource> getFile(@PathVariable String key) throws IOException {
         return materialsService.getFile(key);
     }
 
