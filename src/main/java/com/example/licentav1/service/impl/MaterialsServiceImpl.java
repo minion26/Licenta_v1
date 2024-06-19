@@ -2,6 +2,7 @@ package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
+import com.example.licentav1.AWS.DocToPdfConverter;
 import com.example.licentav1.AWS.S3Service;
 import com.example.licentav1.advice.exceptions.*;
 import com.example.licentav1.config.JwtService;
@@ -10,18 +11,17 @@ import com.example.licentav1.dto.MaterialsDTO;
 import com.example.licentav1.dto.MaterialsInfoDTO;
 import com.example.licentav1.repository.*;
 import com.example.licentav1.service.MaterialsService;
+import com.itextpdf.text.DocumentException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +40,9 @@ public class MaterialsServiceImpl implements MaterialsService {
     private final DidacticRepository didacticRepository;
     private final StudentsRepository studentRepository;
 
-    public MaterialsServiceImpl(S3Service s3Service, MaterialsRepository materialsRepository, LecturesRepository lecturesRepository, JwtService jwtService, TeachersRepository teacherRepository, HttpServletRequest request, CoursesRepository coursesRepository, DidacticRepository didacticRepository, StudentsRepository studentRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository) {
+    private final DocToPdfConverter docToPdfConverter;
+
+    public MaterialsServiceImpl(S3Service s3Service, MaterialsRepository materialsRepository, LecturesRepository lecturesRepository, JwtService jwtService, TeachersRepository teacherRepository, HttpServletRequest request, CoursesRepository coursesRepository, DidacticRepository didacticRepository, StudentsRepository studentRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, DocToPdfConverter docToPdfConverter) {
         this.s3Service = s3Service;
         this.materialsRepository = materialsRepository;
         this.lecturesRepository = lecturesRepository;
@@ -51,6 +53,7 @@ public class MaterialsServiceImpl implements MaterialsService {
         this.didacticRepository = didacticRepository;
         this.studentRepository = studentRepository;
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
+        this.docToPdfConverter = docToPdfConverter;
     }
 
     @Override
@@ -98,14 +101,53 @@ public class MaterialsServiceImpl implements MaterialsService {
 
             try {
 //                Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
-                if (lectures != null){
+                if (lectures != null) {
                     if (materialsRepository.existsByLecturesAndName(lectures.getIdLecture(), f.getOriginalFilename())) {
                         throw new FileException("File already exists for this lecture");
                     }
                 }
 
-                /*ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(f.getSize());*/
+
+                MultipartFile fileToUpload = f; // Create a new variable to hold the file to upload
+
+                // Check if the file is a doc or docx file
+                String originalFilename = f.getOriginalFilename();
+                String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                //delete the first character
+                extension = extension.substring(1);
+
+                File tempFile = null;
+
+                //if the file is a doc or docx file, convert it to a PDF
+                if ("doc".equalsIgnoreCase(extension) || "docx".equalsIgnoreCase(extension)) {
+                    try {
+                        System.out.println("Converting file: " + f.getOriginalFilename() + " to PDF");
+
+                        tempFile = File.createTempFile("temp-file-name", "." + extension);
+                        f.transferTo(tempFile);
+                        File pdfFile = File.createTempFile("temp-file-name", ".pdf");
+
+                        System.out.println("Calling convertDocToPdf"); // Log before calling convertDocToPdf
+
+                        docToPdfConverter.convertDocToPdf(tempFile, pdfFile);
+
+                        System.out.println("Finished calling convertDocToPdf"); // Log after calling convertDocToPdf
+
+                        // Create a new MockMultipartFile from the PDF file
+                        f = new MockMultipartFile("file", originalFilename.substring(0, originalFilename.lastIndexOf(".")) + ".pdf", "application/pdf", new FileInputStream(pdfFile));
+
+                        System.out.println("File converted successfully: " + f.getOriginalFilename());
+                    } catch (Exception e) {
+                        System.out.println("Exception while converting doc to pdf: " + e.getMessage());
+                    }finally {
+                        // Add a null check before calling delete
+                        if (tempFile != null) {
+                            tempFile.delete();
+                        }
+                    }
+                }
+
+                // Upload the file to S3
                 String fileUrl = s3Service.uploadFile(f);
 
 

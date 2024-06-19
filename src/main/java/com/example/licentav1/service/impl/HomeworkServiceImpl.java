@@ -1,6 +1,7 @@
 package com.example.licentav1.service.impl;
 
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.example.licentav1.AWS.DocToPdfConverter;
 import com.example.licentav1.advice.exceptions.NonAllowedException;
 import com.example.licentav1.advice.exceptions.StudentNotFoundException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
@@ -23,11 +24,14 @@ import com.example.licentav1.repository.*;
 import com.example.licentav1.service.HomeworkService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.beans.Transient;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,8 +55,9 @@ public class HomeworkServiceImpl implements HomeworkService {
     private final StudentsFollowCoursesRepository studentsFollowCoursesRepository;
     private final FeedbackRepository feedbackRepository;
     private final EmailService emailService;
+    private final DocToPdfConverter docToPdfConverter;
 
-    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, FeedbackRepository feedbackRepository, EmailService emailService) {
+    public HomeworkServiceImpl(HomeworkRepository homeworkRepository, StudentHomeworkRepository studentHomeworkRepository, StudentsRepository studentsRepository, HomeworkFilesRepository homeworkFilesRepository, S3Service s3Service, HomeworkAnnouncementsRepository homeworkAnnouncementsRepository, UsersRepository usersRepository, HttpServletRequest request, TeachersRepository teachersRepository, JwtService jwtService, DidacticRepository didacticRepository, StudentsFollowCoursesRepository studentsFollowCoursesRepository, FeedbackRepository feedbackRepository, EmailService emailService, DocToPdfConverter docToPdfConverter) {
         this.homeworkRepository = homeworkRepository;
         this.studentHomeworkRepository = studentHomeworkRepository;
         this.homeworkFilesRepository = homeworkFilesRepository;
@@ -67,6 +72,7 @@ public class HomeworkServiceImpl implements HomeworkService {
         this.studentsFollowCoursesRepository = studentsFollowCoursesRepository;
         this.feedbackRepository = feedbackRepository;
         this.emailService = emailService;
+        this.docToPdfConverter = docToPdfConverter;
     }
 
 
@@ -92,6 +98,46 @@ public class HomeworkServiceImpl implements HomeworkService {
             }
 
             try {
+                MultipartFile fileToUpload = file; // Create a new variable to hold the file to upload
+
+                // Check if the file is a doc or docx file
+                String originalFilename = file.getOriginalFilename();
+                String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                //delete the first character
+                extension = extension.substring(1);
+
+                File tempFile = null;
+
+                //if the file is a doc or docx file, convert it to a PDF
+                if ("doc".equalsIgnoreCase(extension) || "docx".equalsIgnoreCase(extension)) {
+                    try {
+                        System.out.println("Converting file: " + file.getOriginalFilename() + " to PDF");
+
+                        tempFile = File.createTempFile("temp-file-name", "." + extension);
+                        file.transferTo(tempFile);
+                        File pdfFile = File.createTempFile("temp-file-name", ".pdf");
+
+                        System.out.println("Calling convertDocToPdf"); // Log before calling convertDocToPdf
+
+                        docToPdfConverter.convertDocToPdf(tempFile, pdfFile);
+
+                        System.out.println("Finished calling convertDocToPdf"); // Log after calling convertDocToPdf
+
+                        // Create a new MockMultipartFile from the PDF file
+                        file = new MockMultipartFile("file", originalFilename.substring(0, originalFilename.lastIndexOf(".")) + ".pdf", "application/pdf", new FileInputStream(pdfFile));
+
+                        System.out.println("File converted successfully: " + file.getOriginalFilename());
+                    } catch (Exception e) {
+                        System.out.println("Exception while converting doc to pdf: " + e.getMessage());
+                    }finally {
+                        // Add a null check before calling delete
+                        if (tempFile != null) {
+                            tempFile.delete();
+                        }
+                    }
+                }
+
+                // Upload the file to S3
                 String fileUrl = s3Service.uploadHomeworkFile(file);
 
                 // creez un obiect HomeworkFiles

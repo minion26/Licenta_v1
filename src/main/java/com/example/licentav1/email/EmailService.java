@@ -85,12 +85,12 @@ public class EmailService {
 //                    "<h3 style='color: #2A6EBB;'>You have to submit the homework: " + homeworkTitle + "</h3>" +
 //                    "<p style='color: #333333;'>For the course: <b style='color: #FF6347;'>" + courseName + "</b> tomorrow</p>" +
 //                    "</div>";
+            System.out.println("sending email from email seervice");
             String htmlBody = "<div style='font-family: Arial, sans-serif; margin: 0 auto; width: 80%; padding: 20px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0,0,0,0.1);'>" +
                     "<h2 style='color: #2A6EBB; text-align: center;'>Homework Reminder</h2>" +
                     "<hr style='border: none; border-top: 1px solid #ddd;'>" +
                     "<h3 style='color: #2A6EBB;'>Homework: " + homeworkTitle + "</h3>" +
                     "<p style='color: #333333;'>You are required to submit the above homework for the course: <b style='color: #FF6347;'>" + courseName + "</b> by tomorrow.</p>" +
-                    "<p style='color: #333333;'>Please disregard this email if you have already submitted.</p>" +
                     "<p style='color: #333333;'>Best,</p>" +
                     "<p style='color: #333333;'>Your Course Team</p>" +
                     "</div>";

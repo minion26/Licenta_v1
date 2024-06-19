@@ -332,6 +332,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
 
                     //verific daca acest user a trimis deja homework-ul
                     StudentHomework studentHomework = studentHomeworkRepository.findByIdStudentAndIdHomeworkAnnouncement(student.getIdUsers(), homework.getIdHomeworkAnnouncements()).orElse(null);
+                    System.out.println("Student homework: " + studentHomework);
                     if(studentHomework != null){
                         System.out.println("Student already submitted homework");
                     }else{

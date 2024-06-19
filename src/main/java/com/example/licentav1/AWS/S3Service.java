@@ -47,7 +47,9 @@ public class S3Service {
         }
         return s3Path;*/
 
-        File tempFile = File.createTempFile("temp-file-name", ".tmp");
+        String originalFilename = file.getOriginalFilename();
+        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        File tempFile = File.createTempFile("temp-file-name", extension);
         file.transferTo(tempFile);
 
         TransferManager tm = TransferManagerBuilder.standard()
