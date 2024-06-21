@@ -304,8 +304,7 @@ public class HomeworkAnnouncementsServiceImpl implements HomeworkAnnouncementsSe
     }
 
 
-
-//    @Scheduled(cron = "0 0 0 * * ?") // This will run the method every day at midnight
+    //    @Scheduled(cron = "0 0 0 * * ?") // This will run the method every day at midnight
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Bucharest")
     public void sendHomeworkReminderEmails() {
         try {

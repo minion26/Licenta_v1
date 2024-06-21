@@ -181,4 +181,38 @@ public class StudentHomeworkServiceImpl implements StudentHomeworkService {
 
 
     }
+
+    @Override
+    public UUID getIdHomework(UUID idHomeworkAnnouncement) {
+        //vreau sa verific daca studentul a postat homework-ul
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        Students studentFromJwt = studentsRepository.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found"));
+
+        //verific daca a postat homework-ul
+        StudentHomework studentHomework = studentHomeworkRepository.findByIdStudentAndIdHomeworkAnnouncement(id, idHomeworkAnnouncement).orElse(null);
+
+        if(studentHomework == null){
+            //daca nu a postat homework-ul
+            System.out.println("Student homework not found");
+            return UUID.fromString("00000000-0000-0000-0000-000000000001");
+        }
+
+        //daca a postat homework-ul
+        return studentHomework.getHomework().getIdHomework();
+    }
 }

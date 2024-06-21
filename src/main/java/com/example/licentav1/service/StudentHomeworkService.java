@@ -9,4 +9,6 @@ public interface StudentHomeworkService {
     Boolean checkPost(UUID idHomeworkAnnouncement, UUID idStudent);
 
     List<StudentHomeworkDTO> getAllByStudent();
+
+    UUID getIdHomework(UUID idHomeworkAnnouncement);
 }

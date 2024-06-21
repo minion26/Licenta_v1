@@ -30,4 +30,10 @@ public class StudentHomeworkController {
         return studentHomeworkService.getAllByStudent();
     }
 
+    @GetMapping("/get-idHomework/idHomeworkAnnouncement={idHomeworkAnnouncement}")
+    @ResponseStatus(HttpStatus.OK)
+    public UUID getIdHomework(@PathVariable("idHomeworkAnnouncement") UUID idHomeworkAnnouncement) {
+        return studentHomeworkService.getIdHomework(idHomeworkAnnouncement);
+    }
+
 }

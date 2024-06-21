@@ -63,6 +63,42 @@ public class CoursesServiceImpl implements CoursesService {
 
     @Override
     public CoursesDTO getCourseById(UUID id) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idUser = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
+        if(role.equals("STUDENT")){
+            //vreau sa vad daca studentul urmeaza cursul respectiv
+            List<StudentsFollowCourses> studentsFollowCoursesList = studentsFollowCoursesRepository.findAllByIdStudent(idUser).orElseThrow(() -> new CourseNotFoundException("Course not found"));
+
+            //daca nu se afla in lista, nu are voie sa vada cursul, trimit eroare
+            int sw = 0;
+            for (StudentsFollowCourses studentsFollowCourses : studentsFollowCoursesList) {
+                if (studentsFollowCourses.getCourse().getIdCourses().equals(id)) {
+                    sw = 1;
+                    break;
+                }
+            }
+
+            if (sw == 0) {
+                throw new NonAllowedException("You are not allowed to see this course");
+            }
+        }
+
         Courses courses = coursesRepository.findById(id).orElseThrow(() -> new CourseNotFoundException("Course not found"));
         return CoursesMapper.toDTO(courses);
     }

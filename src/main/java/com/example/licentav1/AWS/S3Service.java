@@ -110,6 +110,7 @@ public class S3Service {
     public S3Object downloadHomeworkFile(String fileName) {
 
         S3Object s3Object =  s3Client.getObject(new GetObjectRequest(bucketName2, fileName));
+        System.out.println("Downloading file from S3: " + fileName);
         if (s3Object == null) {
             throw new AmazonS3Exception("File not found: " + fileName);
         }

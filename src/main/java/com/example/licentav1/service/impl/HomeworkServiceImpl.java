@@ -176,6 +176,7 @@ public class HomeworkServiceImpl implements HomeworkService {
 
     @Override
     public S3Object loadFileAsResource(String fileName) throws IOException {
+        System.out.println("Downloading file: " + fileName);
         S3Object s3Object =  s3Service.downloadHomeworkFile(fileName);
         if (s3Object == null) {
             throw new FileNotFoundException("File not found: " + fileName);
