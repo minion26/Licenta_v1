@@ -41,4 +41,10 @@ public class FeedbackController {
     public void deleteFeedback(@PathVariable("idFeedback") UUID idFeedback) {
         feedbackService.deleteFeedback(idFeedback);
     }
+
+    @PostMapping("/createOrUpdate/idHomework={idHomework}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createOrUpdateFeedback(@PathVariable("idHomework") UUID idHomework, @RequestBody List<FeedbackCreationDTO> listFeedbackCreationDTO) {
+        feedbackService.createOrUpdateFeedback(idHomework, listFeedbackCreationDTO);
+    }
 }

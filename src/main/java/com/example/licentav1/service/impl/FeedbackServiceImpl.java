@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -84,5 +85,46 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public void deleteFeedback(UUID idFeedback) {
         feedbackRepository.deleteById(idFeedback);
+    }
+
+    @Override
+    public void createOrUpdateFeedback(UUID idHomework, List<FeedbackCreationDTO> listFeedbackCreationDTO) {
+        StudentHomework studentHomework = studentHomeworkRepository.findByIdHomework(idHomework).orElseThrow(() -> new RuntimeException("Student homework not found"));
+        //gaseste tema
+        Homework homework = homeworkRepository.findByIdHomework(idHomework).orElseThrow(() -> new RuntimeException("Homework not found"));
+
+        List<Feedback> feedbacks = new ArrayList<>();
+
+        //pentru fiecare notita
+        for (FeedbackCreationDTO feedbackCreationDTO : listFeedbackCreationDTO) {
+            Feedback feedback;
+
+            // verifica in baza de date dupa id daca exista deja
+            Optional<Feedback> existingFeedback = feedbackRepository.findById(feedbackCreationDTO.getIdNote());
+
+            if (existingFeedback.isPresent()) {
+                // exista? facem update
+                feedback = existingFeedback.get();
+
+                if(feedbackCreationDTO.getPositionX() != null) {
+                    feedback.setPositionX(feedbackCreationDTO.getPositionX());
+                }
+                if(feedbackCreationDTO.getPositionY() != null) {
+                    feedback.setPositionY(feedbackCreationDTO.getPositionY());
+                }
+                if(feedbackCreationDTO.getNoteText() != null) {
+                    feedback.setNoteText(feedbackCreationDTO.getNoteText());
+                    feedback.setContent(feedbackCreationDTO.getNoteText());
+                }
+            } else {
+                // nu exista, o cream noi
+                feedback = FeedbackMapper.fromDTO(feedbackCreationDTO, homework);
+            }
+
+            //punem la lista ca sa le salvam la final pe toate in baza de date
+            feedbacks.add(feedback);
+        }
+
+        feedbackRepository.saveAll(feedbacks);
     }
 }

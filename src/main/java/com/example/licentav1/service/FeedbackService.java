@@ -14,4 +14,6 @@ public interface FeedbackService {
     void updateFeedback(UUID idFeedback, FeedbackCreationDTO feedbackCreationDTO);
 
     void deleteFeedback(UUID idFeedback);
+
+    void createOrUpdateFeedback(UUID idHomework, List<FeedbackCreationDTO> listFeedbackCreationDTO);
 }
