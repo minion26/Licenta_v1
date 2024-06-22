@@ -22,4 +22,8 @@ public interface UsersService {
     Iterable<UsersDTO> getAdmins();
 
     void changePassword(UserChangePasswordDTO userChangePasswordDTO);
+
+    UsersDTO getTheSuperuser();
+
+    void makeSuperuser(UUID idUser);
 }

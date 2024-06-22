@@ -43,6 +43,9 @@ public class Users implements UserDetails {
     @Column(name = "role_id")
     private Integer roleId;
 
+    @Column(name="is_superuser")
+    private Boolean isSuperuser;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String roleName;

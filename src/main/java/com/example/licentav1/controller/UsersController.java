@@ -72,4 +72,16 @@ public class UsersController {
     public void changePassword(@RequestBody UserChangePasswordDTO userChangePasswordDTO) throws UserNotFoundException {
         usersService.changePassword(userChangePasswordDTO);
     }
+
+    @GetMapping("/get-the-superuser")
+    @ResponseStatus(HttpStatus.OK)
+    public UsersDTO getTheSuperuser() {
+        return usersService.getTheSuperuser();
+    }
+
+    @PostMapping("/make-superuser/{idUser}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void makeSuperuser(@PathVariable(value="idUser") UUID idUser) {
+        usersService.makeSuperuser(idUser);
+    }
 }

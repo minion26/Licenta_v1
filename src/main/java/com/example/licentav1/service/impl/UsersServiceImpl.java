@@ -91,7 +91,90 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    public UsersDTO getTheSuperuser() {
+        //if i am the superuser, i can see the superuser
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        Users user = usersRepository.findById(idToken).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (user.getIsSuperuser()) {
+            return UsersMapper.toDto(user);
+        } else {
+            throw new NonAllowedException("You are not a superuser");
+        }
+    }
+
+    @Override
+    public void makeSuperuser(UUID idUser) {
+        //check if i am a superuser
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        Users userFromJWT = usersRepository.findById(idToken).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (!userFromJWT.getIsSuperuser()) {
+            throw new NonAllowedException("You are not superuser");
+        }
+
+        Users userToMakeSuperuser = usersRepository.findById(idUser).orElseThrow(() -> new UserNotFoundException("User not found"));
+        userToMakeSuperuser.setIsSuperuser(true);
+        usersRepository.save(userToMakeSuperuser);
+
+    }
+
+    @Override
     public void createUsers(UsersDTO usersDTO) throws UserAlreadyExistsException {
+
+        //vreau sa verific daca adminul este superuser
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID idToken = jwtService.getUserIdFromToken(token);
+        Users userFromJWT = usersRepository.findById(idToken).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (!userFromJWT.getIsSuperuser()) {
+            throw new NonAllowedException("You are not allowed to create users");
+        }
+
 
         if (usersRepository.existsByFacultyEmail(usersDTO.getFacultyEmail())) {
             throw new UserAlreadyExistsException("User's faculty email already exists");
