@@ -2,7 +2,9 @@ package com.example.licentav1.service.impl;
 
 import com.example.licentav1.advice.exceptions.CourseNotFoundException;
 import com.example.licentav1.advice.exceptions.DidacticRelationNotFoundException;
+import com.example.licentav1.advice.exceptions.NonAllowedException;
 import com.example.licentav1.advice.exceptions.TeacherNotFoundException;
+import com.example.licentav1.config.JwtService;
 import com.example.licentav1.domain.Courses;
 import com.example.licentav1.domain.Didactic;
 import com.example.licentav1.domain.Teachers;
@@ -14,6 +16,8 @@ import com.example.licentav1.repository.DidacticRepository;
 import com.example.licentav1.repository.TeachersRepository;
 import com.example.licentav1.repository.UsersRepository;
 import com.example.licentav1.service.DidacticService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,15 +39,41 @@ public class DidacticServiceImpl implements DidacticService {
 
     private final UsersRepository usersRepository;
 
-    public DidacticServiceImpl(DidacticRepository didacticRepository, CoursesRepository coursesRepository, TeachersRepository teacherRepository, UsersRepository usersRepository) {
+    private final JwtService jwtService;
+    private final HttpServletRequest request;
+
+    public DidacticServiceImpl(DidacticRepository didacticRepository, CoursesRepository coursesRepository, TeachersRepository teacherRepository, UsersRepository usersRepository, JwtService jwtService, HttpServletRequest request) {
         this.didacticRepository = didacticRepository;
         this.coursesRepository = coursesRepository;
         this.teacherRepository = teacherRepository;
         this.usersRepository = usersRepository;
+        this.jwtService = jwtService;
+        this.request = request;
     }
 
     @Override
     public void createDidactic(UUID courseId, UUID teacherId) {
+        //iau din cookie sa vad daca sunt logat ca si admin
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null) {
+            throw new RuntimeException("Token not found");
+        }
+        UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
+        if(!role.equals("ADMIN")){
+            throw new NonAllowedException("You are not an admin");
+        }
+
         Optional<Teachers> teachers = teacherRepository.findById(teacherId);
         Optional<Courses> courses = coursesRepository.findById(courseId);
 
