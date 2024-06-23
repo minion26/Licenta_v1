@@ -40,8 +40,8 @@ public class ExamController {
 
     @PatchMapping("/update/idExam={idExam}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateExam(@RequestBody ExamCreationDTO examCreationDTO, @PathVariable UUID idExam) {
-        examService.updateExam(examCreationDTO, idExam);
+    public void updateExam(@RequestBody ExamDTO examDTO, @PathVariable UUID idExam) {
+        examService.updateExam(examDTO, idExam);
     }
 
     @GetMapping("/get/idCourse={idCourse}")

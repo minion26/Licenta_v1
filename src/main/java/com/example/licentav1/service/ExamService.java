@@ -15,7 +15,7 @@ public interface ExamService {
 
     void deleteExam(UUID idExam);
 
-    void updateExam(ExamCreationDTO examCreationDTO, UUID idExam);
+    void updateExam(ExamDTO examCreationDTO, UUID idExam);
 
     List<ExamDTO> getExamsByCourse(UUID idCourse);
 

@@ -9,10 +9,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 @Repository
 public interface TeacherExamRepository extends JpaRepository<TeacherExam, UUID> {
     @Query(value="SELECT * FROM teacher_exam te WHERE te.id_exam = :idExam", nativeQuery = true)
     List<TeacherExam> findAllByIdExam(@Param("idExam") UUID idExam);
 
+    @Query(value="SELECT * FROM teacher_exam te WHERE te.id_teacher = :idTeacher AND te.id_exam = :idExam", nativeQuery = true)
+    Optional<TeacherExam> findByIdTeacherAndIdExam(@Param("idTeacher") UUID idTeacher, @Param("idExam") UUID idExam);
 }
