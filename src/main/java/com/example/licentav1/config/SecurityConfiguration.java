@@ -46,7 +46,38 @@ public class SecurityConfiguration {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authConfig -> {
                     authConfig.requestMatchers("/api/v1/auth/**").permitAll(); //white list
+
+                    authConfig.requestMatchers("api/v1/users/update/**").hasAnyAuthority("ADMIN", "TEACHER", "STUDENT");
+                    authConfig.requestMatchers("api/v1/users/changePassword").hasAnyAuthority("ADMIN", "TEACHER", "STUDENT");
+
                     authConfig.requestMatchers("/api/v1/homework-announcements/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/lectures/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/materials/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/homework/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/student-answers/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/exam/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/question-exam/**").hasAnyAuthority("TEACHER", "STUDENT");
+                    authConfig.requestMatchers("/api/v1/student-exam/**").hasAnyAuthority("TEACHER", "STUDENT");
+
+
+                    authConfig.requestMatchers("api/v1/question/**").hasAnyAuthority("TEACHER");
+
+
+                    authConfig.requestMatchers("api/v1/students/create").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/teachers/create").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/students/upload").hasAnyAuthority("ADMIN");
+//                    authConfig.requestMatchers("api/v1/students").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/teachers/create").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/teachers/upload").hasAnyAuthority("ADMIN");
+//                    authConfig.requestMatchers("api/v1/teachers").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/users/get-the-superuser").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/users/create").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/users/admins").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/courses/create").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/courses/upload").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/didactic/upload").hasAnyAuthority("ADMIN");
+                    authConfig.requestMatchers("api/v1/students-follow-courses/upload").hasAnyAuthority("ADMIN");
+
                     authConfig.anyRequest().authenticated();
                         }
                 );
