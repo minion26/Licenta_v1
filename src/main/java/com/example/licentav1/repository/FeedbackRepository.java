@@ -18,4 +18,7 @@ public interface FeedbackRepository extends JpaRepository<Feedback, UUID> {
 
     @Query(value = "SELECT * FROM feedback WHERE id_homework = :idHomework", nativeQuery = true)
     void deleteByHomework(@Param("idHomework") UUID idHomework);
+
+    @Query(value = "SELECT * FROM feedback WHERE id_homework = :idHomework", nativeQuery = true)
+    List<Feedback> findByIdHomework(@Param("idHomework") UUID idHomework);
 }

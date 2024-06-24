@@ -95,6 +95,14 @@ public class MaterialsServiceImpl implements MaterialsService {
 
 
         for (MultipartFile f : file){
+
+            //zip, rar, 7z, exe nu merg
+            String extensionFile = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf(".") + 1);
+            System.out.println("Extension file: " + extensionFile);
+            if (extensionFile.equals("zip") || extensionFile.equals("rar") || extensionFile.equals("7z") || extensionFile.equals("exe")) {
+                throw new NonAllowedException("File extension not allowed");
+            }
+
             if (f.isEmpty()) {
                 throw new FileException("File is empty");
             }

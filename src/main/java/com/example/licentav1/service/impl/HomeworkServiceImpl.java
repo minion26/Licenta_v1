@@ -93,6 +93,13 @@ public class HomeworkServiceImpl implements HomeworkService {
         // aici trebuie sa fac upload pe s3
         List<HomeworkFiles> homeworkFilesList = new ArrayList<>();
         for (MultipartFile file : files) {
+            //zip, rar, 7z, exe nu merg
+            String extensionFile = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+            System.out.println("Extension file: " + extensionFile);
+            if (extensionFile.equals("zip") || extensionFile.equals("rar") || extensionFile.equals("7z") || extensionFile.equals("exe")) {
+                throw new NonAllowedException("File extension not allowed");
+            }
+
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
             }
@@ -276,6 +283,16 @@ public class HomeworkServiceImpl implements HomeworkService {
         HomeworkFiles homeworkFiles = homeworkFilesRepository.findById(id).orElseThrow(() -> new RuntimeException("Homework file not found"));
 
         if (homeworkFiles != null) {
+            //DACA ARE NOTA, NU SE POATE STERGE
+            if(homeworkFiles.getHomework().getGrade() !=-1){ // -1 = not graded yet
+                throw new NonAllowedException("Homework file has a grade and cannot be deleted");
+            }
+
+            //daca are feedback, nu se poate sterge
+            if(feedbackRepository.findByIdHomework(homeworkFiles.getHomework().getIdHomework()) != null){
+                throw new NonAllowedException("Homework file has feedback and cannot be deleted");
+            }
+
             String name = homeworkFiles.getFileUrl().substring(homeworkFiles.getFileUrl().lastIndexOf("/") + 1);
             System.out.println(name);
             System.out.println("DELETE: " + homeworkFiles.getFileUrl());
