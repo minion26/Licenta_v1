@@ -1,9 +1,6 @@
 package com.example.licentav1.controller;
 
-import com.example.licentav1.dto.ExamCreationDTO;
-import com.example.licentav1.dto.ExamDTO;
-import com.example.licentav1.dto.QuestionDTO;
-import com.example.licentav1.dto.StudentExamFrontDTO;
+import com.example.licentav1.dto.*;
 import com.example.licentav1.service.ExamService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +51,12 @@ public class ExamController {
     @ResponseStatus(HttpStatus.OK)
     public ExamDTO getExamById(@PathVariable UUID idExam) {
         return examService.getExamById(idExam);
+    }
+
+    @GetMapping("/get-exam-extra-details/idExam={idExam}")
+    @ResponseStatus(HttpStatus.OK)
+    public ExamExtraDetailsDTO getExamExtraDetails(@PathVariable UUID idExam) {
+        return examService.getExamExtraDetails(idExam);
     }
 
     @GetMapping("/get-students/idExam={idExam}")

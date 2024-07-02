@@ -120,13 +120,17 @@ public class StudentAnswersExamServiceImpl implements StudentAnswersExamService 
                 int differences = compareAnswers(studentAnswer, correctAnswer);
                 System.out.println("Differences: " + differences);
                 if (differences <= 2) {
-                    score += correctAnswersExam.getScore();
-                    System.out.println("E OK! Score: " + score);
-                } else {
-                    // coloana needs_review din tabelul student_answers_exam va fi setata pe true
+                    // studentul poate avea un typo si ii trimit profesorului notificare
                     // si o sa apara in lista de raspunsuri care trebuie revizuite
                     studentAnswersExam.setNeedsReview(true);
                     studentAnswersExamRepository.save(studentAnswersExam);
+//                    score += correctAnswersExam.getScore();
+//                    System.out.println("E OK! Score: " + score);
+                } else {
+                    //inseamna ca diferenta este prea mare si studentul nu primeste punctaj
+                        score += 0;
+//                    studentAnswersExam.setNeedsReview(true);
+//                    studentAnswersExamRepository.save(studentAnswersExam);
                 }
             }
 

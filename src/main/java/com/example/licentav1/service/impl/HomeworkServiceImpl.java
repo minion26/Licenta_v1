@@ -93,12 +93,20 @@ public class HomeworkServiceImpl implements HomeworkService {
         // aici trebuie sa fac upload pe s3
         List<HomeworkFiles> homeworkFilesList = new ArrayList<>();
         for (MultipartFile file : files) {
-            //zip, rar, 7z, exe nu merg
-            String extensionFile = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
-            System.out.println("Extension file: " + extensionFile);
-            if (extensionFile.equals("zip") || extensionFile.equals("rar") || extensionFile.equals("7z") || extensionFile.equals("exe")) {
+
+            //sa las sa uploadeze doar : pdf, png, jpg, txt, doc, docx, pptx, java, py, cpp, c, html, css, js, mp4
+            String allowedExtensions = "pdf,png,jpg,txt,doc,docx,pptx,java,py,cpp,c,html,css,js,mp4,dart";
+            String myExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+            if (!allowedExtensions.contains(myExtension)) {
                 throw new NonAllowedException("File extension not allowed");
             }
+
+//            //zip, rar, 7z, exe nu merg
+//            String extensionFile = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+//            System.out.println("Extension file: " + extensionFile);
+//            if (extensionFile.equals("zip") || extensionFile.equals("rar") || extensionFile.equals("7z") || extensionFile.equals("exe")) {
+//                throw new NonAllowedException("File extension not allowed");
+//            }
 
             if (file.isEmpty()) {
                 throw new RuntimeException("File is empty");
@@ -289,7 +297,8 @@ public class HomeworkServiceImpl implements HomeworkService {
             }
 
             //daca are feedback, nu se poate sterge
-            if(feedbackRepository.findByIdHomework(homeworkFiles.getHomework().getIdHomework()) != null){
+            List<Feedback> feedback = feedbackRepository.findByIdHomework(homeworkFiles.getHomework().getIdHomework());
+            if(!feedback.isEmpty()){
                 throw new NonAllowedException("Homework file has feedback and cannot be deleted");
             }
 

@@ -652,4 +652,44 @@ public class ExamServiceImpl implements ExamService {
         Boolean hasStarted = exam.getHasStarted();
         return hasStarted != null && hasStarted;
     }
+
+    @Override
+    public ExamExtraDetailsDTO getExamExtraDetails(UUID idExam) {
+        //vreau sa verific daca profesorul preda la cursul respectiv
+        String token = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("accessToken")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if(token == null) {
+            throw new RuntimeException("Token not found");
+        }
+
+        UUID id = jwtService.getUserIdFromToken(token);
+        String role = jwtService.extractRole(token);
+//        System.out.println("id from token: " + id);
+
+        Exam exam = examRepository.findById(idExam).orElseThrow(() -> new ExamNotFoundException("Exam not found"));
+
+        Courses courseExam = exam.getCourse();
+
+        if(role.equals("STUDENT")){
+            ExamExtraDetailsDTO examExtraDetailsDTO = new ExamExtraDetailsDTO();
+            examExtraDetailsDTO.setName(exam.getName());
+            examExtraDetailsDTO.setDate(exam.getDate());
+            examExtraDetailsDTO.setStartTime(exam.getStartTime());
+
+            return examExtraDetailsDTO;
+        }else{
+            throw new NonAllowedException("You are not allowed to see this exam");
+        }
+
+
+    }
 }

@@ -96,12 +96,20 @@ public class MaterialsServiceImpl implements MaterialsService {
 
         for (MultipartFile f : file){
 
-            //zip, rar, 7z, exe nu merg
-            String extensionFile = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf(".") + 1);
-            System.out.println("Extension file: " + extensionFile);
-            if (extensionFile.equals("zip") || extensionFile.equals("rar") || extensionFile.equals("7z") || extensionFile.equals("exe")) {
+            //sa las sa uploadeze doar : pdf, png, jpg, txt, doc, docx, pptx, java, py, cpp, c, html, css, js, mp4
+            String allowedExtensions = "pdf,png,jpg,txt,doc,docx,pptx,java,py,cpp,c,html,css,js,mp4";
+            String myExtension = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf(".") + 1);
+            System.out.println("Extension: " + myExtension);
+            if (!allowedExtensions.contains(myExtension)) {
                 throw new NonAllowedException("File extension not allowed");
             }
+
+//            //zip, rar, 7z, exe nu merg
+//            String extensionFile = f.getOriginalFilename().substring(f.getOriginalFilename().lastIndexOf(".") + 1);
+//            System.out.println("Extension file: " + extensionFile);
+//            if (extensionFile.equals("zip") || extensionFile.equals("rar") || extensionFile.equals("7z") || extensionFile.equals("exe")) {
+//                throw new NonAllowedException("File extension not allowed");
+//            }
 
             if (f.isEmpty()) {
                 throw new FileException("File is empty");
@@ -109,10 +117,8 @@ public class MaterialsServiceImpl implements MaterialsService {
 
             try {
 //                Lectures lectures = lecturesRepository.findById(id).orElseThrow(() -> new RuntimeException("Lecture not found"));
-                if (lectures != null) {
-                    if (materialsRepository.existsByLecturesAndName(lectures.getIdLecture(), f.getOriginalFilename())) {
-                        throw new FileException("File already exists for this lecture");
-                    }
+                if (materialsRepository.existsByLecturesAndName(lectures.getIdLecture(), f.getOriginalFilename())) {
+                    throw new FileException("File already exists for this lecture");
                 }
 
 

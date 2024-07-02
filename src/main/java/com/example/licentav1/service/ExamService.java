@@ -1,9 +1,6 @@
 package com.example.licentav1.service;
 
-import com.example.licentav1.dto.ExamCreationDTO;
-import com.example.licentav1.dto.ExamDTO;
-import com.example.licentav1.dto.QuestionDTO;
-import com.example.licentav1.dto.StudentExamFrontDTO;
+import com.example.licentav1.dto.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,4 +25,6 @@ public interface ExamService {
     void startExam(UUID idExam);
 
     boolean isExamStarted(UUID idExam);
+
+    ExamExtraDetailsDTO getExamExtraDetails(UUID idExam);
 }
