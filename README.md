@@ -1,6 +1,9 @@
 # Bachelor Project : Backend
 This is a backend project developed using Java, SQL, Spring Boot, and Maven.
 
+## Frontend
+https://github.com/minion26/Licenta_frontend.git
+
 ## Techonologies
 - Java 11.0.22
 - Springboot 3.2.2
